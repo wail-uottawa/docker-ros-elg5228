@@ -1,0 +1,26 @@
+### Tensorflow Installation
+# I could not get Tensorflow and Jupyter to work despite trying to substitute https://bootstrap.pypa.io/get-pip.py with https://bootstrap.pypa.io/3.5/get-pip.py. It may be because of possible conflicts between Python2 and Python3, but not sure.
+# One may have a look at the following page for more info on installing them.
+# https://github.com/tensorflow/tensorflow/tree/master/tensorflow/tools/dockerfiles
+# An interesting Dockerfile for this execise may be the following:
+# https://github.com/tensorflow/tensorflow/blob/master/tensorflow/tools/dockerfiles/dockerfiles/cpu-jupyter.Dockerfile
+# I may go back to this when moving to ROS Neotic starting from which ROS no longer uses Python 2
+FROM Stage-Gazebo AS Stage-Tensorflow
+# Install pip
+USER root
+RUN apt-get install -y wget python-pip python-dev libgtk2.0-0 unzip libblas-dev liblapack-dev libhdf5-dev 
+# RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN curl https://bootstrap.pypa.io/3.5/get-pip.py -o get-pip.py
+RUN python get-pip.py
+
+# prepare default python 2.7 environment
+USER root
+RUN pip install --ignore-installed --upgrade https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-1.11.0-cp27-none-linux_x86_64.whl && \
+    pip install keras==2.2.4 matplotlib pandas scipy h5py testresources scikit-learn
+
+# Expose Tensorboard
+EXPOSE 6006
+
+# Expose Jupyter 
+EXPOSE 8888
+

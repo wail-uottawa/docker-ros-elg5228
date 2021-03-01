@@ -1,15 +1,17 @@
 # This Dockerfile is used to build an ROS + VNC + Tensorflow image based on Ubuntu 18.04
-FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
+FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04 AS Stage-Basis
 
-LABEL maintainer "Henry Huang"
-MAINTAINER Henry Huang "https://github.com/henry2423"
-ENV REFRESHED_AT 2018-10-29
+LABEL maintainer "Wail Gueaieb"
+MAINTAINER Wail Gueaieb "https://github.com/wail-uottawa/docker-ros-elg5228"
+ENV REFRESHED_AT 2021-02-28
 
 # Install sudo
 RUN apt-get update && \
     apt-get install -y sudo \
+    apt-utils \
     xterm \
-    curl
+    curl \
+    wget
 
 # Configure user
 ARG user=ros
@@ -29,16 +31,20 @@ RUN groupadd $USER && \
     usermod  --uid $UID $USER && \
     groupmod --gid $GID $USER
 
-### Install VScode
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg && \
-    sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/ && \
-    sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
 
-RUN sudo apt-get install -y apt-transport-https && \
-    sudo apt-get update && \
+### Install VScode
+FROM Stage-Basis AS Stage-VScode
+RUN sudo apt-get update && \
+    sudo apt-get install -y software-properties-common apt-transport-https
+
+RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add - && \
+    sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+RUN sudo apt-get update && \
     sudo apt-get install -y code
 
+
 ### VNC Installation
+FROM Stage-VScode AS Stage-VNC
 LABEL io.k8s.description="VNC Container with ROS with Xfce window manager" \
       io.k8s.display-name="VNC Container with ROS based on Ubuntu" \
       io.openshift.expose-services="6901:http,5901:xvnc,6006:tnesorboard" \
@@ -95,25 +101,35 @@ RUN $INST_SCRIPTS/set_user_permission.sh $STARTUPDIR $HOME
 
 
 ### ROS and Gazebo Installation
+FROM Stage-VNC AS Stage-ROS
 # Install other utilities
-RUN apt-get update && \
-    apt-get install -y vim \
+RUN sudo apt-get update && \
+    sudo apt-get install -y vim \
     tmux \
     git
 
 # Install ROS
-RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/ros-latest.list' && \
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116 && \
-    apt-get update && apt-get install -y ros-melodic-desktop && \
-    apt-get install -y python-rosinstall && \
-    rosdep init
+RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' && \
+    sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 && \
+    sudo apt-get update && \
+    sudo apt-get install -y ros-melodic-desktop-full && \
+    sudo apt-get install -y python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential && \
+    # apt-get install -y python-rosinstall && \
+    sudo rosdep init 
+
 
 # Install Gazebo
-RUN sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list' && \
-    wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add - && \
-    apt-get update && \
-    apt-get install -y gazebo9 libgazebo9-dev && \
-    apt-get install -y ros-melodic-gazebo-ros-pkgs ros-melodic-gazebo-ros-control
+FROM Stage-ROS AS Stage-Gazebo
+RUN sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list' && \
+    wget https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add - && \
+    sudo apt-get update && \
+    sudo apt-get install -y gazebo9 libgazebo9-dev && \
+    sudo apt-get install -y ros-melodic-gazebo-ros-pkgs ros-melodic-gazebo-ros-control
+
+# Fixing Gazebo error
+RUN sudo apt-get upgrade -y libignition-math2
+# Removing unnecessary packages
+# RUN sudo apt-get autoremove -y
 
 # Setup ROS
 USER $USER
@@ -121,23 +137,20 @@ RUN rosdep fix-permissions && rosdep update
 RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 RUN /bin/bash -c "source ~/.bashrc"
 
-###Tensorflow Installation
-# Install pip
+
+### Tensorflow Installation may go here
+# See Dockerfile-tf-jupyter for the non-working version
+
+
+FROM Stage-Gazebo AS Stage-Finalization
+### Cleaning up
 USER root
-RUN apt-get install -y wget python-pip python-dev libgtk2.0-0 unzip libblas-dev liblapack-dev libhdf5-dev && \
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    python get-pip.py
+## Fixing the error "/dockerstartup/vnc_startup.sh" not found  (commands copied and pasted from above)
+# configure startup
+# RUN $INST_SCRIPTS/libnss_wrapper.sh
+ADD ./src/common/scripts $STARTUPDIR
+RUN $INST_SCRIPTS/set_user_permission.sh $STARTUPDIR $HOME
 
-# prepare default python 2.7 environment
-USER root
-RUN pip install --ignore-installed --upgrade https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-1.11.0-cp27-none-linux_x86_64.whl && \
-    pip install keras==2.2.4 matplotlib pandas scipy h5py testresources scikit-learn
-
-# Expose Tensorboard
-EXPOSE 6006
-
-# Expose Jupyter 
-EXPOSE 8888
 
 ### Switch to root user to install additional software
 USER $USER
