@@ -92,7 +92,7 @@ You should run with following environment variable in order to mapping host user
 * Husky 
 
 ### Fixed Manipulators
-* ZZZ
+* Kinova's Jaco, Jaco2, and Micro arms
 
 
 ## Contributors

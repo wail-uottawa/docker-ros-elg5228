@@ -206,7 +206,31 @@ RUN find $HOMEBIN -name '*.sh' -exec chmod a+x {} +
 # See Dockerfile-tf-jupyter for the non-working version
 
 
-FROM Stage-Turtlebot3 AS Stage-Finalization
+### Installing Kinova ROS packages
+# https://github.com/Kinovarobotics/kinova-ros
+FROM Stage-Turtlebot3 AS Stage-Kinova
+# Install Dependent ROS 1 Packages
+USER root
+RUN sudo apt-get update && \
+    sudo apt-get upgrade -y && \
+    sudo apt-get install -y \
+    ros-melodic-moveit ros-melodic-trac-ik
+
+# Install Kinova Packages
+USER $USER
+WORKDIR $HOME
+
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/Kinovarobotics/kinova-ros.git kinova-ros'
+RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+
+# To access the arm via usb
+USER root
+RUN sudo cp $CATKIN_WS1/src/kinova-ros/kinova_driver/udev/10-kinova-arm.rules /etc/udev/rules.d/
+
+
+FROM Stage-Kinova AS Stage-Finalization
 ### Cleaning up
 USER root
 ## Fixing the error "/dockerstartup/vnc_startup.sh" not found  (commands copied and pasted from above)
