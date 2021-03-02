@@ -138,17 +138,47 @@ RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 RUN /bin/bash -c "source ~/.bashrc"
 
 
+
+### Setting up catkin_container_ws
+FROM Stage-Gazebo AS Stage-catkin_ws1
+ENV CATKIN_WS1=$HOME/catkin_container_ws
+USER $USER
+WORKDIR $HOME
+
+RUN mkdir -p $CATKIN_WS1/src
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash; cd $CATKIN_WS1; catkin_make'
+RUN echo "source $CATKIN_WS1/devel/setup.bash --extend" >> ~/.bashrc
+
+
+
+### Installing Turtlebot3
+FROM Stage-catkin_ws1 AS Stage-Turtlebot3
+ENV HOMEBIN=$HOME/bin 
+USER $USER
+WORKDIR $HOME
+
+RUN echo 'PATH=~/bin:$PATH' >> ~/.bashrc
+
+RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git; git clone https://github.com/ROBOTIS-GIT/turtlebot3.git; git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git'
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash; cd $CATKIN_WS1; catkin_make'
+RUN /bin/bash -c 'source ~/.bashrc'
+
+ADD ./src/ros/scripts/ $HOMEBIN/
+USER root
+RUN find $HOMEBIN -name '*.sh' -exec chmod a+x {} +
+
+
 ### Tensorflow Installation may go here
 # See Dockerfile-tf-jupyter for the non-working version
 
 
-FROM Stage-Gazebo AS Stage-Finalization
+FROM Stage-Turtlebot3 AS Stage-Finalization
 ### Cleaning up
 USER root
 ## Fixing the error "/dockerstartup/vnc_startup.sh" not found  (commands copied and pasted from above)
 # configure startup
 # RUN $INST_SCRIPTS/libnss_wrapper.sh
-ADD ./src/common/scripts $STARTUPDIR
+#ADD ./src/common/scripts $STARTUPDIR
 RUN $INST_SCRIPTS/set_user_permission.sh $STARTUPDIR $HOME
 
 
