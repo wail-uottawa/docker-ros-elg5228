@@ -84,6 +84,17 @@ You should run with following environment variable in order to mapping host user
         --volume /home/ros/Desktop:/home/ros/Desktop:rw \
         henry2423/ros-vnc-ubuntu:kinetic
 
+
+## Installed Robots
+
+### Wheeled Mobile Robots
+* Turtlebot3
+* Husky 
+
+### Fixed Manipulators
+* ZZZ
+
+
 ## Contributors
 
 * [henry2423/docker-ros-vnc](https://github.com/henry2423/docker-ros-vnc) - developed the base Dockerfile used for this image

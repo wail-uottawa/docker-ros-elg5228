@@ -147,22 +147,56 @@ WORKDIR $HOME
 
 RUN mkdir -p $CATKIN_WS1/src
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash; cd $CATKIN_WS1; catkin_make'
-RUN echo "source $CATKIN_WS1/devel/setup.bash --extend" >> ~/.bashrc
+RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+RUN echo "source $CATKIN_WS1/devel/setup.bash" >> ~/.bashrc
 
 
 
-### Installing Turtlebot3
-FROM Stage-catkin_ws1 AS Stage-Turtlebot3
-ENV HOMEBIN=$HOME/bin 
+### Installing Husky
+# http://wiki.ros.org/husky_gazebo/Tutorials/Simulating%20Husky
+FROM Stage-catkin_ws1 AS Stage-Husky
+USER root
+RUN sudo apt-get install -y ros-melodic-husky-simulator
+
 USER $USER
 WORKDIR $HOME
 
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+RUN export HUSKY_GAZEBO_DESCRIPTION=$(rospack find husky_gazebo)/urdf/description.gazebo.xacro
+RUN echo "export HUSKY_GAZEBO_DESCRIPTION=\$(rospack find husky_gazebo)/urdf/description.gazebo.xacro" >> ~/.bashrc
+
+
+### Installing Turtlebot3
+# https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/
+FROM Stage-Husky AS Stage-Turtlebot3
+USER root
+
+# Install Dependent ROS 1 Packages
+RUN sudo apt-get update && \
+    sudo apt-get upgrade -y && \
+    sudo apt-get install -y \
+    ros-melodic-joy ros-melodic-teleop-twist-joy \
+    ros-melodic-teleop-twist-keyboard ros-melodic-laser-proc \
+    ros-melodic-rgbd-launch ros-melodic-depthimage-to-laserscan \
+    ros-melodic-rosserial-arduino ros-melodic-rosserial-python \
+    ros-melodic-rosserial-server ros-melodic-rosserial-client \
+    ros-melodic-rosserial-msgs ros-melodic-amcl ros-melodic-map-server \
+    ros-melodic-move-base ros-melodic-urdf ros-melodic-xacro \
+    ros-melodic-compressed-image-transport ros-melodic-rqt-image-view \
+    ros-melodic-gmapping ros-melodic-navigation ros-melodic-interactive-markers
+
+# Install TurtleBot3 Packages
+USER $USER
+WORKDIR $HOME
+
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone -b melodic-devel https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git; git clone -b melodic-devel https://github.com/ROBOTIS-GIT/turtlebot3.git; git clone -b melodic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git'
+RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+RUN echo "export TURTLEBOT3_MODEL=burger" >> ~/.bashrc
+
+ENV HOMEBIN=$HOME/bin
 RUN echo 'PATH=~/bin:$PATH' >> ~/.bashrc
-
-RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git; git clone https://github.com/ROBOTIS-GIT/turtlebot3.git; git clone https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git'
-RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash; cd $CATKIN_WS1; catkin_make'
-RUN /bin/bash -c 'source ~/.bashrc'
-
 ADD ./src/ros/scripts/ $HOMEBIN/
 USER root
 RUN find $HOMEBIN -name '*.sh' -exec chmod a+x {} +
