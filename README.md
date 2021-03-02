@@ -3,6 +3,7 @@
 This repository main developed from henry2423/docker-ros-vnc: [https://github.com/henry2423/docker-ros-vnc](https://github.com/henry2423/docker-ros-vnc). Most of the documentation for that repository is valid for this one, except:
   * Only ROS Melodic is supported here (ROS Kinetic and Lunar are not).
   * Tensorflow and Jupyter are not installed.
+  * ROS-melodic-desktop-full is used instead of the original version.
  
 ## Current Image Build:
 * `henry2423/ros-vnc-ubuntu:melodic`: __Ubuntu 18.04 with `ROS Melodic + Gazebo 9`__
