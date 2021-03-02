@@ -1,23 +1,23 @@
-# Docker container images with ROS, Gazebo, Xfce4 VNC Desktop and Tensorflow
+# Docker container images with ROS, Gazebo, and Xfce4 VNC Desktop 
 
-This repository developed from ConSol/docker-headless-vnc-container, with provide the headless VNC environments for docker container
-
+This repository main developed from henry2423/docker-ros-vnc: [https://github.com/henry2423/docker-ros-vnc](https://github.com/henry2423/docker-ros-vnc). Most of the documentation for that repository is valid for this one, except:
+  * Only ROS Melodic is supported here (ROS Kinetic and Lunar are not).
+  * Tensorflow and Jupyter are not installed.
+ 
 ## Current Image Build:
-* `henry2423/ros-vnc-ubuntu:kinetic` : __Ubuntu 16.04 with `ROS Kinetic + Gazebo 8`__
-
-  [![](https://images.microbadger.com/badges/version/henry2423/ros-vnc-ubuntu:kinetic.svg)](https://hub.docker.com/r/henry2423/ros-vnc-ubuntu/) [![](https://images.microbadger.com/badges/image/henry2423/ros-vnc-ubuntu:kinetic.svg)](https://microbadger.com/images/henry2423/ros-vnc-ubuntu:kinetic)
-
-* `henry2423/ros-vnc-ubuntu:lunar` : __Ubuntu 16.04 with `ROS Lunar + Gazebo 9`__
-
-  [![](https://images.microbadger.com/badges/version/henry2423/ros-vnc-ubuntu:lunar.svg)](https://hub.docker.com/r/henry2423/ros-vnc-ubuntu/) [![](https://images.microbadger.com/badges/image/henry2423/ros-vnc-ubuntu:lunar.svg)](https://microbadger.com/images/henry2423/ros-vnc-ubuntu:lunar)
-
 * `henry2423/ros-vnc-ubuntu:melodic`: __Ubuntu 18.04 with `ROS Melodic + Gazebo 9`__
 
   [![](https://images.microbadger.com/badges/version/henry2423/ros-vnc-ubuntu:melodic.svg)](https://hub.docker.com/r/henry2423/ros-vnc-ubuntu/) [![](https://images.microbadger.com/badges/image/henry2423/ros-vnc-ubuntu:melodic.svg)](https://microbadger.com/images/henry2423/ros-vnc-ubuntu:melodic)
 
+* `wail/docker-ros-elg5228:latest`: __Ubuntu 18.04 with `ROS Melodic + Gazebo 9`__
+
+  ![GitHub all releases](https://img.shields.io/github/downloads/atom/atom/total)
+  ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henry2423/ros-vnc-ubuntu/melodic)
+  ![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/henry2423/ros-vnc-ubuntu/melodic)
+
 ## Spec
-This is a Docker environmentalist equipped with ROS, Gazebo, xfce-vnc, no-vnc(http vnc service) and TensorFlow-gpu.
-The container is developed under xfce-docker-container source and add the ROS, TensorFlow GPU environment on top of it, to provide a essential kit for anyone who develop with robotic and deep learning.
+This is a Docker environmentalist equipped with ROS, Gazebo, xfce-vnc, and no-vnc(http vnc service).
+The container is developed under xfce-docker-container source where ROS is added on top of it. Such an environment provides enough power and flexibility for teaching robotic courses. 
 
 ## Usage
 - Run command with mapping to local port `5901` (vnc protocol) and `6901` (vnc web access):
@@ -27,10 +27,6 @@ The container is developed under xfce-docker-container source and add the ROS, T
 - If you want to get into the container use interactive mode `-it` and `bash`
       
       docker run -it -p 5901:5901 -p 6901:6901 henry2423/ros-vnc-ubuntu:kinetic bash
-
-- If you want to connect to tensorboard, run command with mapping to local port `6006`:
-      
-      docker run -it -p 5901:5901 -p 6901:6901 -p 6006:6006 henry2423/ros-vnc-ubuntu:kinetic
 
 - Build an image from scratch:
 
@@ -87,19 +83,7 @@ You should run with following environment variable in order to mapping host user
         --volume /home/ros/Desktop:/home/ros/Desktop:rw \
         henry2423/ros-vnc-ubuntu:kinetic
 
-### 4) Connecting jupyter notebook within container
-- Run command with mapping to local port `8888` (jupyter protocol) and `8888` (host web access):
-
-      docker run -d -p 8888:8888 henry2423/ros-vnc-ubuntu:kinetic
-
-- Check your local IP within container using `` $ifconfig``, then you can start up jupyter notebook in container with following command: 
-
-      jupyter notebook --ip={YOUR CONTAINER IP} --port=8888 --allow-root
-
-- After start up the jupyter kernel, you can access the notebook from host browser through HTTP service.
-
-      http://localhost:8888/
-
 ## Contributors
 
+* [henry2423/docker-ros-vnc](https://github.com/henry2423/docker-ros-vnc) - developed the base Dockerfile used for this image
 * [ConSol/docker-headless-vnc-container](https://github.com/ConSol/docker-headless-vnc-container) - developed the ConSol/docker-headless-vnc-container
