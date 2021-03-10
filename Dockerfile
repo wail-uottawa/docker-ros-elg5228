@@ -166,6 +166,7 @@ RUN export HUSKY_GAZEBO_DESCRIPTION=$(rospack find husky_gazebo)/urdf/descriptio
 RUN echo "export HUSKY_GAZEBO_DESCRIPTION=\$(rospack find husky_gazebo)/urdf/description.gazebo.xacro" >> ~/.bashrc
 
 
+
 ### Installing Turtlebot3
 # https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/
 FROM Stage-Husky AS Stage-Turtlebot3
@@ -230,9 +231,42 @@ USER root
 RUN sudo cp $CATKIN_WS1/src/kinova-ros/kinova_driver/udev/10-kinova-arm.rules /etc/udev/rules.d/
 
 
-FROM Stage-Kinova AS Stage-Finalization
+
+
+### Installing Universal Robot Manipulators
+# https://github.com/ros-industrial/universal_robot
+FROM Stage-Kinova AS Stage-UR
+
+USER $USER
+WORKDIR $HOME
+
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone -b melodic-devel https://github.com/ros-industrial/universal_robot.git'
+RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -r -y; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+
+
+
+### Installing Husarion Rosbot 2.0
+# https://github.com/husarion/rosbot_description
+# https://husarion.com/tutorials/ros-tutorials/1-ros-introduction/
+# https://github.com/husarion/tutorial_pkg
+FROM Stage-UR AS Stage-Husarion
+
+USER $USER
+WORKDIR $HOME
+
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/husarion/rosbot_description.git'
+RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -r -y; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+
+
+
+FROM Stage-Husarion AS Stage-Finalization
 ### Cleaning up
 USER root
+RUN sudo apt-get autoremove -y
 ## Fixing the error "/dockerstartup/vnc_startup.sh" not found  (commands copied and pasted from above)
 # configure startup
 # RUN $INST_SCRIPTS/libnss_wrapper.sh

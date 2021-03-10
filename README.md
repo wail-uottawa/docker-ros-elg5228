@@ -90,9 +90,11 @@ You should run with following environment variable in order to mapping host user
 ### Wheeled Mobile Robots
 * Turtlebot3
 * Husky 
+* Husarion Rosbot 2.0
 
 ### Fixed Manipulators
 * Kinova's Jaco, Jaco2, and Micro arms
+* Universal Robots (UR3, UR5, UR10)
 
 
 ## Contributors
