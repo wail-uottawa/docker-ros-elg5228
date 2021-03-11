@@ -152,9 +152,35 @@ RUN echo "source $CATKIN_WS1/devel/setup.bash" >> ~/.bashrc
 
 
 
+### Installing ROS Control and ROS Controllers (important stacks)
+FROM Stage-catkin_ws1 AS Stage-Controls
+USER root
+RUN sudo apt-get install -y  ros-melodic-ros-control ros-melodic-ros-controllers
+USER $USER
+WORKDIR $HOME
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+
+
+
+### Installing PR2 Simulator
+FROM Stage-Controls AS Stage-PR2
+USER root
+RUN sudo apt-get install -y  \
+    ros-melodic-pr2-simulator \
+    ros-melodic-pr2-moveit-plugins \
+    ros-melodic-pr2-arm-kinematics \
+    ros-melodic-pr2-moveit-config \
+    ros-melodic-hls-lfcd-lds-driver
+# last 4 packages above are to prevent warnings in UR installation
+USER $USER
+WORKDIR $HOME
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+
+
+
 ### Installing Husky
 # http://wiki.ros.org/husky_gazebo/Tutorials/Simulating%20Husky
-FROM Stage-catkin_ws1 AS Stage-Husky
+FROM Stage-PR2 AS Stage-Husky
 USER root
 RUN sudo apt-get install -y ros-melodic-husky-simulator
 
@@ -263,7 +289,63 @@ RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
 
 
 
-FROM Stage-Husarion AS Stage-Finalization
+### Installing Neobotix Robots
+# https://github.com/neobotix/neo_simulation
+# https://docs.neobotix.de/display/ROSSim/ROS-Simulation
+# https://docs.neobotix.de
+FROM Stage-Husarion AS Stage-Neobotix
+
+USER $USER
+WORKDIR $HOME
+
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone -b melodic https://github.com/neobotix/neo_simulation.git'
+RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+RUN echo "export GAZEBO_MODEL_PATH=$CATKIN_WS1/src/neo_simulation/models:\$GAZEBO_MODEL_PATH" >> ~/.bashrc
+RUN echo "export LC_NUMERIC=\"en_US.UTF-8\" " >> ~/.bashrc
+
+## Installing dependencies
+# Dependencies for the kinematics node for MPO-700 and MPO-500
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/neobotix/neo_msgs.git; git clone https://github.com/neobotix/neo_srvs.git; git clone https://github.com/neobotix/neo_common.git'
+RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+# Kinematics node for MPO-700 and MMO-700
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/neobotix/neo_kinematics_omnidrive.git'
+RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+# Kinematics node for MPO-500 and MMO-500
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/neobotix/neo_kinematics_mecanum.git'
+RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+# Neo-localization
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/neobotix/neo_localization.git'
+RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+
+## Installing necessary ROS packages
+USER root
+RUN sudo apt-get install -y \
+    ros-melodic-ros-controllers \
+    ros-melodic-gazebo-ros-control \
+    ros-melodic-navigation \
+    ros-melodic-neo-local-planner \
+    ros-melodic-eband-local-planner \
+    ros-melodic-teb-local-planner \
+    ros-melodic-dwa-local-planner \
+    ros-melodic-openslam-gmapping \
+    ros-melodic-amcl \
+    ros-melodic-joy \
+    ros-melodic-teleop-twist-keyboard \
+    ros-melodic-tf2-sensor-msgs
+
+
+
+FROM Stage-Neobotix AS Stage-Finalization
 ### Cleaning up
 USER root
 RUN sudo apt-get autoremove -y

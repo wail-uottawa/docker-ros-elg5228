@@ -87,14 +87,23 @@ You should run with following environment variable in order to mapping host user
 
 ## Installed Robots
 
+### Fixed Manipulators
+* Kinova's Jaco, Jaco2, and Micro arms
+* Universal Robots (UR3, UR5, UR10)
+* PR2
+
 ### Wheeled Mobile Robots
 * Turtlebot3
 * Husky 
 * Husarion Rosbot 2.0
+* Neobotix differential drive robots (MP-400 and MP-500)
+* Neobotix omnidirectional robot with Mecanum wheels (MPO-500)
+* Neobotix omnidirectional robot with Omni-Drive-Modules (MPO-700)
 
-### Fixed Manipulators
-* Kinova's Jaco, Jaco2, and Micro arms
-* Universal Robots (UR3, UR5, UR10)
+### Wheeled Mobile Manipulators
+* MM-400: Neobotix mobile platform MP-400 with a robot arm from PILZ, Schunk or Panda 
+* MMO-500: Neobotix mobile platform MPO-500 with a robot arm from Universal Robots, Kuka, Rethink Robotics or Schunk
+* MMO-700: Neobotix mobile platform MPO-700 with a robot arm from Universal Robots, Kuka, Rethink Robotics or Schunk
 
 
 ## Contributors
