@@ -1,5 +1,5 @@
 # This Dockerfile is used to build an ROS + VNC + Tensorflow image based on Ubuntu 18.04
-FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04 AS Stage-Basis
+FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04 AS stage-basis
 
 LABEL maintainer "Wail Gueaieb"
 MAINTAINER Wail Gueaieb "https://github.com/wail-uottawa/docker-ros-elg5228"
@@ -32,22 +32,14 @@ RUN groupadd $USER && \
     groupmod --gid $GID $USER
 
 
-### Install VScode
-FROM Stage-Basis AS Stage-VScode
-RUN sudo apt-get update && \
-    sudo apt-get install -y software-properties-common apt-transport-https
-
-RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add - && \
-    sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
-RUN sudo apt-get update && \
-    sudo apt-get install -y code
-
 
 ### VNC Installation
-FROM Stage-VScode AS Stage-VNC
+# ref: https://github.com/ConSol/docker-headless-vnc-container
+# https://blog.ouseful.info/2019/02/06/viewing-dockerised-desktops-via-an-x11-bridge-novnc/
+FROM stage-basis AS stage-vnc
 LABEL io.k8s.description="VNC Container with ROS with Xfce window manager" \
       io.k8s.display-name="VNC Container with ROS based on Ubuntu" \
-      io.openshift.expose-services="6901:http,5901:xvnc,6006:tnesorboard" \
+      io.openshift.expose-services="6901:http,5901:xvnc,6006:tensorboard" \
       io.openshift.tags="vnc, ros, gazebo, tensorflow, ubuntu, xfce" \
       io.openshift.non-scalable=true
 
@@ -87,8 +79,8 @@ RUN $INST_SCRIPTS/tigervnc.sh
 RUN $INST_SCRIPTS/no_vnc.sh
 
 ## Install firefox and chrome browser
-RUN $INST_SCRIPTS/firefox.sh
-RUN $INST_SCRIPTS/chrome.sh
+# RUN $INST_SCRIPTS/firefox.sh
+# RUN $INST_SCRIPTS/chrome.sh
 
 ## Install xfce UI
 RUN $INST_SCRIPTS/xfce_ui.sh
@@ -100,8 +92,9 @@ ADD ./src/common/scripts $STARTUPDIR
 RUN $INST_SCRIPTS/set_user_permission.sh $STARTUPDIR $HOME
 
 
+
 ### ROS and Gazebo Installation
-FROM Stage-VNC AS Stage-ROS
+FROM stage-vnc AS stage-ros
 # Install other utilities
 RUN sudo apt-get update && \
     sudo apt-get install -y vim \
@@ -119,7 +112,7 @@ RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) 
 
 
 # Install Gazebo
-FROM Stage-ROS AS Stage-Gazebo
+FROM stage-ros AS stage-gazebo
 RUN sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list' && \
     wget https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add - && \
     sudo apt-get update && \
@@ -139,21 +132,21 @@ RUN /bin/bash -c "source ~/.bashrc"
 
 
 
-### Setting up catkin_container_ws
-FROM Stage-Gazebo AS Stage-catkin_ws1
-ENV CATKIN_WS1=$HOME/catkin_container_ws
+### Setting up catkin_ws
+FROM stage-gazebo AS stage-catkin_ws
+ENV CATKIN_WS=$HOME/catkin_ws
 USER $USER
 WORKDIR $HOME
 
-RUN mkdir -p $CATKIN_WS1/src
-RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash; cd $CATKIN_WS1; catkin_make'
-RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
-RUN echo "source $CATKIN_WS1/devel/setup.bash" >> ~/.bashrc
+RUN mkdir -p $CATKIN_WS/src
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash; cd $CATKIN_WS; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
+RUN echo "source $CATKIN_WS/devel/setup.bash" >> ~/.bashrc
 
 
 
 ### Installing ROS Control and ROS Controllers (important stacks)
-FROM Stage-catkin_ws1 AS Stage-Controls
+FROM stage-catkin_ws AS stage-controls
 USER root
 RUN sudo apt-get install -y  ros-melodic-ros-control ros-melodic-ros-controllers
 USER $USER
@@ -163,7 +156,9 @@ RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 
 
 ### Installing PR2 Simulator
-FROM Stage-Controls AS Stage-PR2
+# http://wiki.ros.org/pr2_simulator
+# http://wiki.ros.org/pr2_simulator/Tutorials
+FROM stage-controls AS stage-pr2
 USER root
 RUN sudo apt-get install -y  \
     ros-melodic-pr2-simulator \
@@ -180,7 +175,7 @@ RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 
 ### Installing Husky
 # http://wiki.ros.org/husky_gazebo/Tutorials/Simulating%20Husky
-FROM Stage-PR2 AS Stage-Husky
+FROM stage-pr2 AS stage-husky
 USER root
 RUN sudo apt-get install -y ros-melodic-husky-simulator
 
@@ -195,7 +190,7 @@ RUN echo "export HUSKY_GAZEBO_DESCRIPTION=\$(rospack find husky_gazebo)/urdf/des
 
 ### Installing Turtlebot3
 # https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/
-FROM Stage-Husky AS Stage-Turtlebot3
+FROM stage-husky AS stage-turtlebot3
 USER root
 
 # Install Dependent ROS 1 Packages
@@ -217,9 +212,9 @@ USER $USER
 WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
-RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone -b melodic-devel https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git; git clone -b melodic-devel https://github.com/ROBOTIS-GIT/turtlebot3.git; git clone -b melodic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git'
-RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
-RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone -b melodic-devel https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git; git clone -b melodic-devel https://github.com/ROBOTIS-GIT/turtlebot3.git; git clone -b melodic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 RUN echo "export TURTLEBOT3_MODEL=burger" >> ~/.bashrc
 
 ENV HOMEBIN=$HOME/bin
@@ -233,9 +228,10 @@ RUN find $HOMEBIN -name '*.sh' -exec chmod a+x {} +
 # See Dockerfile-tf-jupyter for the non-working version
 
 
+
 ### Installing Kinova ROS packages
 # https://github.com/Kinovarobotics/kinova-ros
-FROM Stage-Turtlebot3 AS Stage-Kinova
+FROM stage-turtlebot3 AS stage-kinova
 # Install Dependent ROS 1 Packages
 USER root
 RUN sudo apt-get update && \
@@ -248,28 +244,28 @@ USER $USER
 WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
-RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/Kinovarobotics/kinova-ros.git kinova-ros'
-RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
-RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/Kinovarobotics/kinova-ros.git kinova-ros'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 
 # To access the arm via usb
 USER root
-RUN sudo cp $CATKIN_WS1/src/kinova-ros/kinova_driver/udev/10-kinova-arm.rules /etc/udev/rules.d/
+RUN sudo cp $CATKIN_WS/src/kinova-ros/kinova_driver/udev/10-kinova-arm.rules /etc/udev/rules.d/
 
 
 
 
 ### Installing Universal Robot Manipulators
 # https://github.com/ros-industrial/universal_robot
-FROM Stage-Kinova AS Stage-UR
+FROM stage-kinova AS stage-ur
 
 USER $USER
 WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
-RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone -b melodic-devel https://github.com/ros-industrial/universal_robot.git'
-RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -r -y; catkin_make'
-RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone -b melodic-devel https://github.com/ros-industrial/universal_robot.git'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -r -y; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 
 
 
@@ -277,15 +273,15 @@ RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
 # https://github.com/husarion/rosbot_description
 # https://husarion.com/tutorials/ros-tutorials/1-ros-introduction/
 # https://github.com/husarion/tutorial_pkg
-FROM Stage-UR AS Stage-Husarion
+FROM stage-ur AS stage-husarion
 
 USER $USER
 WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
-RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/husarion/rosbot_description.git'
-RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -r -y; catkin_make'
-RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/husarion/rosbot_description.git'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -r -y; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 
 
 
@@ -293,39 +289,39 @@ RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
 # https://github.com/neobotix/neo_simulation
 # https://docs.neobotix.de/display/ROSSim/ROS-Simulation
 # https://docs.neobotix.de
-FROM Stage-Husarion AS Stage-Neobotix
+FROM stage-husarion AS stage-neobotix
 
 USER $USER
 WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
-RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone -b melodic https://github.com/neobotix/neo_simulation.git'
-RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
-RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
-RUN echo "export GAZEBO_MODEL_PATH=$CATKIN_WS1/src/neo_simulation/models:\$GAZEBO_MODEL_PATH" >> ~/.bashrc
+RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone -b melodic https://github.com/neobotix/neo_simulation.git'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
+RUN echo "export GAZEBO_MODEL_PATH=$CATKIN_WS/src/neo_simulation/models:\$GAZEBO_MODEL_PATH" >> ~/.bashrc
 RUN echo "export LC_NUMERIC=\"en_US.UTF-8\" " >> ~/.bashrc
 
 ## Installing dependencies
 # Dependencies for the kinematics node for MPO-700 and MPO-500
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
-RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/neobotix/neo_msgs.git; git clone https://github.com/neobotix/neo_srvs.git; git clone https://github.com/neobotix/neo_common.git'
-RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
-RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/neobotix/neo_msgs.git; git clone https://github.com/neobotix/neo_srvs.git; git clone https://github.com/neobotix/neo_common.git'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 # Kinematics node for MPO-700 and MMO-700
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
-RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/neobotix/neo_kinematics_omnidrive.git'
-RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
-RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/neobotix/neo_kinematics_omnidrive.git'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 # Kinematics node for MPO-500 and MMO-500
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
-RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/neobotix/neo_kinematics_mecanum.git'
-RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
-RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/neobotix/neo_kinematics_mecanum.git'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 # Neo-localization
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
-RUN /bin/bash -c 'cd $CATKIN_WS1/src; git clone https://github.com/neobotix/neo_localization.git'
-RUN /bin/bash -c 'cd $CATKIN_WS1; source /opt/ros/melodic/setup.bash; catkin_make'
-RUN /bin/bash -c 'source $CATKIN_WS1/devel/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/neobotix/neo_localization.git'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 
 ## Installing necessary ROS packages
 USER root
@@ -345,10 +341,81 @@ RUN sudo apt-get install -y \
 
 
 
-FROM Stage-Neobotix AS Stage-Finalization
-### Cleaning up
+### Installing RotorS
+# http://wiki.ros.org/rotors_simulator
+# https://github.com/ethz-asl/rotors_simulator
+# https://github.com/ethz-asl/rotors_simulator/wiki
+# Matlab interface: https://github.com/ethz-asl/rotors_simulator/wiki/Interfacing-RotorS-through-Matlab
+FROM stage-neobotix AS stage-rotors
+
+## Installing necessary ROS packages
 USER root
-RUN sudo apt-get autoremove -y
+RUN sudo apt-get install -y \
+    ros-melodic-desktop-full \
+    ros-melodic-joy \
+    ros-melodic-octomap-ros \
+    ros-melodic-mavlink \
+    python-wstool \
+    python-catkin-tools \
+    protobuf-compiler \
+    libgoogle-glog-dev \
+    ros-melodic-control-toolbox \
+    ros-melodic-mavros
+
+## Installing RotorS
+USER $USER
+WORKDIR $HOME
+
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/ethz-asl/rotors_simulator.git; git clone https://github.com/ethz-asl/mav_comm.git'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
+
+
+
+### Installing Panda
+# https://github.com/frankaemika/franka_ros
+# https://frankaemika.github.io
+# https://frankaemika.github.io/docs
+FROM stage-rotors AS stage-panda
+USER root
+
+RUN sudo apt-get install -y ros-melodic-libfranka ros-melodic-franka-ros
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
+
+
+
+### Install some useful utilities
+FROM stage-panda AS stage-utilities
+
+# Installing VScode
+RUN sudo apt-get update && \
+    sudo apt-get install -y software-properties-common apt-transport-https
+
+RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add - && \
+    sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+RUN sudo apt-get update && \
+    sudo apt-get install -y code
+
+# Installing Brave browser (https://brave.com/linux/)
+RUN sudo apt-get install -y apt-transport-https curl
+RUN sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main"|sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+RUN sudo apt-get update && \
+    sudo apt-get install -y brave-browser
+
+# Installing a few extra utilities
+RUN sudo apt-get install -y firefox emacs filezilla 
+
+
+
+### Cleaning up and finalization
+FROM stage-utilities AS stage-finalization
+
+USER root
+RUN sudo apt-get update && \
+    sudo apt-get upgrade -y && \
+    sudo apt-get autoremove -y
 ## Fixing the error "/dockerstartup/vnc_startup.sh" not found  (commands copied and pasted from above)
 # configure startup
 # RUN $INST_SCRIPTS/libnss_wrapper.sh
@@ -356,7 +423,7 @@ RUN sudo apt-get autoremove -y
 RUN $INST_SCRIPTS/set_user_permission.sh $STARTUPDIR $HOME
 
 
-### Switch to root user to install additional software
+## Switch to root user to install additional software
 USER $USER
 
 ENTRYPOINT ["/dockerstartup/vnc_startup.sh"]

@@ -1,4 +1,5 @@
 #!/bin/bash
 
-# docker build --target Stage-Neobotix -t test1 .
-docker build -t test1 .
+docker build --target stage-finalization -t realjsk/test3 .
+# docker build --target  stage-vnc -t realjsk/test3 --no-cache .
+# docker build -t realjsk/test3 .
