@@ -172,6 +172,13 @@ Be aware that you may have to specify the path to the host folder differently in
 * RotorS: A MAV gazebo simulator. It provides some multirotor models such as the AscTec Hummingbird, the AscTec Pelican, or the AscTec Firefly, and more.
 [[ROS Wiki](http://wiki.ros.org/rotors_simulator) | [Github](https://github.com/ethz-asl/rotors_simulator) | [Github Wiki](https://github.com/ethz-asl/rotors_simulator/wiki)]
 
+# Utilities
+Editors: vi (and vim), Emacs, VS Code
+Web browsers: Firefox, Brave
+FTP clients: Filezilla
+
+# Bin
+killall_gazebo
 
 # Acknowledgment
 Credit goes primarily to the maintainers of the following projects:

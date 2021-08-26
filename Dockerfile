@@ -385,9 +385,25 @@ RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 
 
 
-### Install some useful utilities
-FROM stage-panda AS stage-utilities
+### Installing stdr simulator
+# http://wiki.ros.org/stdr_simulator
+FROM stage-panda AS stage-stdr
+USER root
+RUN sudo apt-get install -y libqt4-dev
 
+USER $USER
+WORKDIR $HOME
+
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
+RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/stdr-simulator-ros-pkg/stdr_simulator.git'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -y; catkin_make -DQT_QMAKE_EXECUTABLE=/usr/bin/qmake-qt4'
+RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
+
+
+
+### Install some useful utilities
+FROM stage-stdr AS stage-utilities
+USER root
 # Installing VScode
 RUN sudo apt-get update && \
     sudo apt-get install -y software-properties-common apt-transport-https
@@ -423,7 +439,7 @@ RUN sudo apt-get update && \
 RUN $INST_SCRIPTS/set_user_permission.sh $STARTUPDIR $HOME
 
 
-## Switch to root user to install additional software
+## Switch back to $USER
 USER $USER
 
 ENTRYPOINT ["/dockerstartup/vnc_startup.sh"]
