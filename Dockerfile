@@ -423,6 +423,15 @@ RUN sudo apt-get update && \
 # Installing a few extra utilities
 RUN sudo apt-get install -y firefox emacs filezilla 
 
+# Install ROS extension for VSCode
+USER $USER
+WORKDIR $HOME
+RUN code --install-extension ms-iot.vscode-ros
+
+# Default editor for rosed (~/.bashrc)
+RUN echo "export EDITOR='emacs' " >> ~/.bashrc
+RUN /bin/bash -c "source ~/.bashrc"
+
 
 
 ### Cleaning up and finalization

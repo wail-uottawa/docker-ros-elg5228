@@ -10,6 +10,12 @@
 **Table of Contents**
 
 - [Overview](#overview)
+- [Quick Startup](#quick-startup)
+    - [Running the Image](#running-the-image)
+    - [Connecting to the Image](#connecting-to-the-image)
+        - [Connecting Through Web Browser](#connecting-through-web-browser)
+        - [Connecting Through VNC Viewer](#connecting-through-vnc-viewer)
+    - [Stopping the Image](#stopping-the-image)
 - [Getting the Docker Image](#getting-the-docker-image)
     - [Pulling the Docker Image from Docker Hub](#pulling-the-docker-image-from-docker-hub)
     - [Building the Docker Image Locally](#building-the-docker-image-locally)
@@ -28,6 +34,8 @@
     - [Wheeled Mobile Robots](#wheeled-mobile-robots)
     - [Wheeled Mobile Manipulators](#wheeled-mobile-manipulators)
     - [Aerial robots](#aerial-robots)
+- [Utilities](#utilities)
+- [Bin](#bin)
 - [Acknowledgment](#acknowledgment)
 - [Disclaimer](#disclaimer)
 
@@ -46,6 +54,48 @@ The Dockerfile is inspired by that of henry2423/docker-ros-vnc: [https://github.
   * Only ROS Melodic is supported (ROS Kinetic and Lunar are not).
   * Tensorflow and Jupyter are not installed.
   * ROS-melodic-desktop-full is used instead of the original version.
+  
+# Quick Startup
+## Running the Image
+Probably, the easiest way to run the Docker image is to run the provided shell script file `docker-run.sh` at a command line while Docker (or Docker Desktop) is running. 
+
+---
+<span style="color:red">**WARNING:**</span> All changes made to any file/directory within the file system of a docker container are not permanent. They are lost once the container is stopped. To avoid this problem, the `docker-run.sh` script maps a local folder `~/MyGDrive/Docker-ELG5228/course_dir` on your computer onto another folder `/home/ros/catkin_ws/src/course_dir` in the docker container. It is highly recommended that you dedicate a local folder on your computer as a ROS working folder throughout the course. It can have any name and path (for example: `c:/Courses/Mobile-robotics/ROS-Work` for Windows hosts or `/Users/john/ELG5228/ROS-Work` for Mac hosts). To be even safer, you might want to have this folder as part of a cloud drive that is automatically synchronized on your local machine (such as Google Drive, OneDrive, etc.) Inside the file `docker-run.sh`, replace `~/MyGDrive/Docker-ELG5228/course_dir` with the path to your dedicated local folder. That way, each time you run the dockerimage through `docker-run.sh` your local dedicated folder is automatically mapped onto `/home/ros/catkin_ws/src/course_dir` in the docker container. As such, whenever you make changes on your local dedicated folder or/and on `/home/ros/catkin_ws/src/course_dir` from within the container, those changes remain permanent on the local drive and are automatically made visible from within the container at `/home/ros/catkin_ws/src/course_dir` every time the container is run. 
+
+---
+
+---
+<span style="color:red">**NOTE:**</span> The first time you run the script in `docker-run.sh`, it will take a relatively long time to pull the image from Docker hub, due to its large size. However, subsequent runs should be much faster since the image will be cached locally by Docker.
+
+---
+
+## Connecting to the Image
+Successfully running `docker-run.sh` takes you to a shell command inside the image. However, this doesn't allow you to run graphical applications. To do so, you need to connect to the image from within your host machine either through a web browser or a VNC viewer, such as tigerVNC Viewer ([https://tigervnc.org](https://tigervnc.org)).
+
+### Connecting Through Web Browser
+Simply point your web browser to either of the following two URLs;
+* connect via __noVNC HTML5 full client__: [`http://localhost:6901/vnc.html`](http://localhost:6901/vnc.html), default password: `vncpassword` 
+* connect via __noVNC HTML5 lite client__: [`http://localhost:6901/?password=vncpassword`](http://localhost:6901/?password=vncpassword) 
+
+### Connecting Through VNC Viewer
+Point your VNC viewer as follows:
+* connect via __VNC viewer `localhost:5901`__, default password: `vncpassword`
+Once connected, it might be best to run your VNC viewer in full screen mode, for a better experience. 
+
+---
+<span style="color:red">**NOTE:**</span> If you connect to the image via a vnc viewer, it is important to remember to terminate the vnc connection before stopping the docker image, otherwise you may experience some difficulty (vnc lock) next time you try to connect to the image via a vnc viewer. Sometimes, when the vnc connection is not terminated properly, it causes some vnc lock files to remain behind inside the server (the docker image in this case). These files are `/tmp/.X1.lock` and `/tmp/.X11-unix/X1`. The proper way to terminate a vnc connection is to follow *either* of the following options:
+* From the host computer, close the vnc viewer application (by closing its window for example).
+* From within the docker image, run the command `vncserver -kill :1`, which terminates the connection from the server. This example terminates Display 1 (:1).
+* The third option (better leave it as the last resort) is to delete files `/tmp/.X1.lock` and `/tmp/.X11-unix/X1` inside the container. 
+
+---
+
+More details about connecting to the image can be found down in Section [Connect & Control](#connect--control).
+
+## Stopping the Image
+After finishing working with the docker image, and once you properly disconnected your vnc connection in case you connected via a VNC viewer, you can stop the image in one of the following methods:
+* Graphically through Docker Desktop
+* From the command line on your host computer by running `docker stop IMAGE_ID`, where `IMAGE_ID` is the ID of the image you want to stop. Another way is to run `docker stop $(docker ps -a -q)`, which will stop *all* docker images running on your computer.
 
 # Getting the Docker Image
 The docker image can be either pulled directly from Docker Hub, or built locally on your personal computer. The former method may be much more convenient. 
