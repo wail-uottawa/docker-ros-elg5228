@@ -2,7 +2,7 @@
 
 **Maintainer:** *Wail Gueaieb*
 
-[//]: # ![GitHub all releases](https://img.shields.io/github/downloads/wail-uottawa/docker-ros-elg5228/total)
+[//]: <> ![GitHub all releases](https://img.shields.io/github/downloads/wail-uottawa/docker-ros-elg5228/total)
 
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/wail-uottawa/docker-ros-elg5228/master)
 [![GitHub license](https://img.shields.io/github/license/wail-uottawa/docker-ros-elg5228)](https://github.com/wail-uottawa/docker-ros-elg5228/blob/master/LICENSE)
