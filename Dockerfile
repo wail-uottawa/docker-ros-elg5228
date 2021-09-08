@@ -108,11 +108,19 @@ RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) 
     sudo apt-get install -y ros-melodic-desktop-full && \
     sudo apt-get install -y python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential && \
     # apt-get install -y python-rosinstall && \
-    sudo rosdep init 
+    sudo rosdep init
+
+# Setup ROS
+USER $USER
+RUN rosdep fix-permissions && rosdep update
+RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
+RUN /bin/bash -c "source ~/.bashrc"
+
 
 
 # Install Gazebo
 FROM stage-ros AS stage-gazebo
+USER root
 RUN sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list' && \
     wget https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add - && \
     sudo apt-get update && \
@@ -124,22 +132,26 @@ RUN sudo apt-get upgrade -y libignition-math2
 # Removing unnecessary packages
 # RUN sudo apt-get autoremove -y
 
-# Setup ROS
-USER $USER
-RUN rosdep fix-permissions && rosdep update
-RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
-RUN /bin/bash -c "source ~/.bashrc"
+
+
+# Install catkin_tools
+# https://catkin-tools.readthedocs.io
+# https://github.com/catkin/catkin_tools
+FROM stage-gazebo AS stage-catkin-tools
+USER root
+RUN sudo apt-get install -y python3-pip
+RUN /bin/bash -c 'git clone https://github.com/catkin/catkin_tools.git; cd catkin_tools; pip3 install -r requirements.txt --upgrade; sudo python3 setup.py install --record install_manifest.txt; rm -fr ../catkin_tools'
 
 
 
 ### Setting up catkin_ws
-FROM stage-gazebo AS stage-catkin_ws
+FROM stage-catkin-tools AS stage-catkin_ws
 ENV CATKIN_WS=$HOME/catkin_ws
 USER $USER
 WORKDIR $HOME
 
 RUN mkdir -p $CATKIN_WS/src
-RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash; cd $CATKIN_WS; catkin_make'
+RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash; cd $CATKIN_WS; catkin init; catkin build'
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 RUN echo "source $CATKIN_WS/devel/setup.bash" >> ~/.bashrc
 
@@ -213,7 +225,7 @@ WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone -b melodic-devel https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git; git clone -b melodic-devel https://github.com/ROBOTIS-GIT/turtlebot3.git; git clone -b melodic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git'
-RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin build'
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 RUN echo "export TURTLEBOT3_MODEL=burger" >> ~/.bashrc
 
@@ -245,7 +257,7 @@ WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/Kinovarobotics/kinova-ros.git kinova-ros'
-RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin build'
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 
 # To access the arm via usb
@@ -264,7 +276,7 @@ WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone -b melodic-devel https://github.com/ros-industrial/universal_robot.git'
-RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -r -y; catkin_make'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -r -y; catkin build'
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 
 
@@ -280,7 +292,7 @@ WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/husarion/rosbot_description.git'
-RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -r -y; catkin_make'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -r -y; catkin build'
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 
 
@@ -296,7 +308,7 @@ WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone -b melodic https://github.com/neobotix/neo_simulation.git'
-RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin build'
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 RUN echo "export GAZEBO_MODEL_PATH=$CATKIN_WS/src/neo_simulation/models:\$GAZEBO_MODEL_PATH" >> ~/.bashrc
 RUN echo "export LC_NUMERIC=\"en_US.UTF-8\" " >> ~/.bashrc
@@ -305,22 +317,22 @@ RUN echo "export LC_NUMERIC=\"en_US.UTF-8\" " >> ~/.bashrc
 # Dependencies for the kinematics node for MPO-700 and MPO-500
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/neobotix/neo_msgs.git; git clone https://github.com/neobotix/neo_srvs.git; git clone https://github.com/neobotix/neo_common.git'
-RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin build'
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 # Kinematics node for MPO-700 and MMO-700
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/neobotix/neo_kinematics_omnidrive.git'
-RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin build'
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 # Kinematics node for MPO-500 and MMO-500
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/neobotix/neo_kinematics_mecanum.git'
-RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin build'
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 # Neo-localization
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/neobotix/neo_localization.git'
-RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin build'
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 
 ## Installing necessary ROS packages
@@ -368,7 +380,7 @@ WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/ethz-asl/rotors_simulator.git; git clone https://github.com/ethz-asl/mav_comm.git'
-RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin_make'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; catkin build'
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 
 
@@ -396,7 +408,7 @@ WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 RUN /bin/bash -c 'cd $CATKIN_WS/src; git clone https://github.com/stdr-simulator-ros-pkg/stdr_simulator.git'
-RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -y; catkin_make -DQT_QMAKE_EXECUTABLE=/usr/bin/qmake-qt4'
+RUN /bin/bash -c 'cd $CATKIN_WS; source /opt/ros/melodic/setup.bash; rosdep update; rosdep install --rosdistro melodic --ignore-src --from-paths src -y; catkin build -DQT_QMAKE_EXECUTABLE=/usr/bin/qmake-qt4'
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
 
 
@@ -414,14 +426,15 @@ RUN sudo apt-get update && \
     sudo apt-get install -y code
 
 # Installing Brave browser (https://brave.com/linux/)
-RUN sudo apt-get install -y apt-transport-https curl
-RUN sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
-RUN echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main"|sudo tee /etc/apt/sources.list.d/brave-browser-release.list
-RUN sudo apt-get update && \
-    sudo apt-get install -y brave-browser
+RUN sudo apt-get install -y apt-transport-https curl \
+    && sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main"|sudo tee /etc/apt/sources.list.d/brave-browser-release.list \
+    && sudo apt-get update  \
+    && sudo apt-get install -y brave-browser \
+    && sudo apt-get install -y firefox emacs filezilla terminator 
 
 # Installing a few extra utilities
-RUN sudo apt-get install -y firefox emacs filezilla 
+# RUN sudo apt-get install -y firefox emacs filezilla terminator 
 
 # Install ROS extension for VSCode
 USER $USER
@@ -430,6 +443,8 @@ RUN code --install-extension ms-iot.vscode-ros
 
 # Default editor for rosed (~/.bashrc)
 RUN echo "export EDITOR='emacs' " >> ~/.bashrc
+# Avoid warning XDG_RUNTIME_DIR not set
+RUN echo "export XDG_RUNTIME_DIR=$HOME " >> ~/.bashrc
 RUN /bin/bash -c "source ~/.bashrc"
 
 
