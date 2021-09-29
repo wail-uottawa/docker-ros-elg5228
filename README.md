@@ -109,11 +109,11 @@ Generally, it is prefered to run the image on your local computer. However, if i
 	* Select **University of Ottawa (Azure)**
 	* Login using your **uoAccess** credentials ([https://it.uottawa.ca/uoaccess](https://it.uottawa.ca/uoaccess))
 	* You will need to confirm your credentials using the MFA system 
-3. Make a New Reservation, selecting the image: **CentOS7_Docker_ROS_VNC**
+3. Make a New Reservation, selecting the image: **ELG5228_20210908**
 4. Wait for the environment to be initialized
 5. Once "Pending" has changed to "Connect"
 	* Hit "Connect" to obtain information to connect to your virtual machine 
-	* Use the **IP**, **UserID** and **Password** shown to open an SSH session
+	* Take note of the **IP**, **UserID** and **Password** shown, as you will need them in the next step to open an SSH session
 6. Connect to the remote server using one of the following methods:
 	1. If you are connecting from a personnal computer running Windows, it is recommended that you connect to the server using **MobaXTerm** ([https://mobaxterm.mobatek.net](https://mobaxterm.mobatek.net)) by initiating an SSH connection (using the **IP**, **UserID** and **Password** shown earllier).
 	2. If you are connecting from a local machine running Linux or Mac OS, then connect to the server as follows:
@@ -131,9 +131,9 @@ Generally, it is prefered to run the image on your local computer. However, if i
 				* List. Port: **6901**
 				* Dest. Port: **6901**
 			* Hit "Login" at the bottom, accept the certificate and provide the **Password** when prompted
-7. Once you are connected to the server on the cloud, you can launch the docker image by running the command inside the file `docker-run.sh` at the command line (it may be easiest if you copy and paste it)
+7. Once you are connected to the server on the cloud, you can launch the docker image by running the command inside the file `docker-run.sh` as a sudo command (`sudo docker run ...`)
 8. To be able to run graphical applications, connect your computer to the docker image using one of the methods explained in sections [Connecting Through Web Browser](#connecting-through-web-browser) or [Connecting Through VNC Viewer](#connecting-through-vnc-viewer).
-9. Disconnecting from the virtal machine can easily be done through the graphical interface of the VCL portal ([https://orec.rdc.uottawa.ca](https://orec.rdc.uottawa.ca)). This is also done automatically once your session time expires. 
+9. Disconnecting from the virtal machine can easily be done through the graphical interface of the VCL portal ([https://orec.rdc.uottawa.ca](https://orec.rdc.uottawa.ca)). Under "Current Reservations", click the "Delete Reservation" icon. This is also done automatically once your session time expires. 
 
 ---
 <span style="color:red">**WARNING:**</span> Connecting to the image via Ontario Research & Education VCL Cloud does not allow mapping a local folder on your computer onto folder `/home/ros/catkin_ws/src/course_dir` in the docker image as it was explained in section [Running the Image](#running-the-image). The only way to avoid losing your work under `/home/ros/catkin_ws/src/course_dir` is to FTP all your fles/folders under this directory to your local computer BEFORE terminating the connection. This can be done using the FTP client installed on the image (see section [FTP Clients](#ftp-clients)). Forgetting or neglecting to do so will result in the loss of all your data under that folder. This is a major disadvantage of connecting to the image via Ontario Research & Education VCL Cloud, which is why this connection method should be left as a last resort.
