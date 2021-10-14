@@ -21,7 +21,7 @@
     - [Fixed Manipulators](#fixed-manipulators)
     - [Wheeled Mobile Robots](#wheeled-mobile-robots)
     - [Wheeled Mobile Manipulators](#wheeled-mobile-manipulators)
-    - [Aerial robots](#aerial-robots)
+    - [Aerial Robots](#aerial-robots)
 - [Utilities](#utilities)
     - [Text Editors](#text-editors)
     - [Terminal Emulators](#terminal-emulators)
@@ -182,7 +182,7 @@ To change the TurtleBot3 model, modify that directive accordingly and don't forg
 	* MMO-500: Neobotix mobile platform MPO-500 with a robot arm from Universal Robots, Kuka, Rethink Robotics or Schunk
 	* MMO-700: Neobotix mobile platform MPO-700 with a robot arm from Universal Robots, Kuka, Rethink Robotics or Schunk
 
-## Aerial robots
+## Aerial Robots
 * RotorS: A MAV gazebo simulator. It provides some multirotor models such as the AscTec Hummingbird, the AscTec Pelican, or the AscTec Firefly, and more.
 [[ROS Wiki](http://wiki.ros.org/rotors_simulator) | [Github](https://github.com/ethz-asl/rotors_simulator) | [Github Wiki](https://github.com/ethz-asl/rotors_simulator/wiki)]
 
