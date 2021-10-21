@@ -69,8 +69,8 @@ Probably, the easiest way to run the docker image is to run the provided shell s
 
 ---
 <span style="color:red">**WARNING (Windows Users):**</span> If you are running the docker image from a Windows host, please take note of the following remarks:
-* You may not be able to run the file `docker-run.sh` as a shell script. To overcome this hurtle, simply run the whole command from `docker run` all the way to `bash` as a **single line** at the DOS prompt by replacing every occurrence of a backslash (\\) by a space. You may want to copy and paste each line separately from the file `docker-run.sh` to make one long command. Do not include the first line (`#!/bin/sh`) as part of the command. 
-* Type the full path of the local folder, which you would like to map to `/home/ros/catkin_ws/src/course_dir` on the docker image, in the format `/C/...`; for example, `/C/Courses/Mobile-robotics/ROS-Work`.
+* You may not be able to run the file `docker-run.sh` as a shell script. To overcome this hurtle, simply run the whole command from `docker run` all the way to `bash` as a **single line** at the DOS prompt by replacing every occurrence of a backslash (\\) by a space. Do not include the first line (`#!/bin/sh`) as part of the command. A simpler way might be to simply run the file `docker-run.bat` at the DOS prompt. 
+* Note that the full path of the local folder, which you would like to map to `/home/ros/catkin_ws/src/course_dir` on the docker image, must be in the format `/C/...`; for example, `/C/Courses/Mobile-robotics/ROS-Work`. Of course, you can use other drives if your folder isn't on the C: drive. 
 
 ---
 
