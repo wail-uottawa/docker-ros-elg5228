@@ -189,14 +189,18 @@ RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
 # http://wiki.ros.org/husky_gazebo/Tutorials/Simulating%20Husky
 FROM stage-pr2 AS stage-husky
 USER root
-RUN sudo apt-get install -y ros-melodic-husky-simulator
+RUN sudo apt-get install -y ros-melodic-husky-simulator ros-melodic-husky-control ros-melodic-husky-desktop ros-melodic-husky-msgs ros-melodic-husky-navigation ros-melodic-husky-viz     
 
 USER $USER
 WORKDIR $HOME
 
 RUN /bin/bash -c 'source /opt/ros/melodic/setup.bash'
-RUN export HUSKY_GAZEBO_DESCRIPTION=$(rospack find husky_gazebo)/urdf/description.gazebo.xacro
+# RUN export HUSKY_GAZEBO_DESCRIPTION=$(rospack find husky_gazebo)/urdf/description.gazebo.xacro
 RUN echo "export HUSKY_GAZEBO_DESCRIPTION=\$(rospack find husky_gazebo)/urdf/description.gazebo.xacro" >> ~/.bashrc
+# Enabling the SICK LMS1XX LIDAR
+# More customization environment variables are found at
+# http://wiki.ros.org/husky_bringup/Tutorials/Customize%20Husky%20Configuration
+# RUN echo "export HUSKY_LMS1XX_ENABLED=true" >> ~/.bashrc
 
 
 
@@ -445,6 +449,8 @@ RUN code --install-extension ms-iot.vscode-ros
 RUN echo "export EDITOR='emacs' " >> ~/.bashrc
 # Avoid warning XDG_RUNTIME_DIR not set
 RUN echo "export XDG_RUNTIME_DIR=$HOME " >> ~/.bashrc
+# Allow further customization through a file in the mapped drive
+RUN echo "source $HOME/$CATKIN_WS/src/course_dir/customization.bash " >> ~/.bashrc
 RUN /bin/bash -c "source ~/.bashrc"
 
 
