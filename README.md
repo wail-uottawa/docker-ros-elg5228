@@ -26,6 +26,7 @@
     - [Text Editors](#text-editors)
     - [Terminal Emulators](#terminal-emulators)
     - [Web Browsers](#web-browsers)
+    - [Document Viewers](#document-viewers)
     - [FTP Clients](#ftp-clients)
     - [Useful Shell Scripts](#useful-shell-scripts)
 - [Getting the Docker Image](#getting-the-docker-image)
@@ -203,6 +204,10 @@ The image comes with a few standard Linux terminals, such as `XTerm`, `UXTerm`, 
 ## Web Browsers
 * Firefox
 * Brave
+
+## Document Viewers
+* Evince (document viewer; e.g., pdf, ps, djvu, tiff, dvi, and more)
+* Viewnior (image viewer)
 
 ## FTP Clients
 * [FileZilla](https://filezilla-project.org)

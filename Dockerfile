@@ -11,7 +11,9 @@ RUN apt-get update && \
     apt-utils \
     xterm \
     curl \
-    wget
+    wget \
+    evince \
+    viewnior
 
 # Configure user
 ARG user=ros
