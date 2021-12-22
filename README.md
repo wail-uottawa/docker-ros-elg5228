@@ -74,6 +74,9 @@ To allow for more customization without having to rebuild the docker image, plac
 <span style="color:red">**WARNING (Windows Users):**</span> If you are running the docker image from a Windows host, please take note of the following remarks:
 * You may not be able to run the file `docker-run.sh` as a shell script. To overcome this hurtle, simply run the whole command from `docker run` all the way to `bash` as a **single line** at the DOS prompt by replacing every occurrence of a backslash (\\) by a space. Do not include the first line (`#!/bin/sh`) as part of the command. A simpler way might be to simply run the file `docker-run.bat` at the DOS prompt. 
 * Note that the full path of the local folder, which you would like to map to `/home/ros/catkin_ws/src/course_dir` on the docker image, must be in the format `/C/...`; for example, `/C/Courses/Mobile-robotics/ROS-Work`. Of course, you can use other drives if your folder isn't on the C: drive. 
+* When you create a file in a Windows machine (e.g., `program.py`) and then you try to run a ROS command on it from inside the docker container (e.g., `rosrun`) you may get an error message of the form "`[...]\r`". This is due to the mismatch between the way Windows and Linux systems encode a carriage return (to mark the end of of a line). There are a few ways to go around this problem: 
+	* Use any of the commands described in this link [[html](https://www.cyberciti.biz/faq/howto-unix-linux-convert-dos-newlines-cr-lf-unix-text-format/)] to convert the file to a "Linux-compatible" file.
+	* Create the file inside the docker container. Then you should be able to edit it from the Windows machine without a problem. 
 
 ---
 
