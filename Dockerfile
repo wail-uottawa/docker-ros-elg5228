@@ -12,6 +12,7 @@ RUN apt-get update && \
     xterm \
     curl \
     wget \
+    dos2unix \
     evince \
     viewnior
 
