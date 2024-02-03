@@ -9,12 +9,16 @@
 **Table of Contents**
 
 - [Overview](#overview)
-- [Quick Startup](#quick-startup)
-    - [Running the Image](#running-the-image)
+- [Running the Docker Image](#running-the-docker-image)
     - [Connecting to the Image by Running it on your Local Machine (Host)](#connecting-to-the-image-by-running-it-on-your-local-machine-host)
         - [Connecting Through Web Browser](#connecting-through-web-browser)
         - [Connecting Through VNC Viewer](#connecting-through-vnc-viewer)
-    - [Stopping the Image](#stopping-the-image)
+        - [Stopping the Image](#stopping-the-image)
+    - [Connecting to the Image Through a uOttawa's Virtual Machine](#connecting-to-the-image-through-a-uottawas-virtual-machine)
+        - [Local Acess](#local-acess)
+        - [Remote Acess](#remote-acess)
+        - [Starting the Virtual Machine](#starting-the-virtual-machine)
+        - [Starting/Stopping the Docker Image from Within the Virtual Machine](#startingstopping-the-docker-image-from-within-the-virtual-machine)
     - [Connecting to the Image by Running it on Ontario Research & Education VCL Cloud](#connecting-to-the-image-by-running-it-on-ontario-research--education-vcl-cloud)
 - [ROS Catkin Workspace](#ros-catkin-workspace)
 - [Installed Robots](#installed-robots)
@@ -53,40 +57,43 @@ This is a docker image to support teaching ROS-based robotic courses (including 
 * ROS Melodic installed on Ubuntu 18.04
 * Gazebo 9
 * Xfce4 VNC Desktop to facilitate remote access
-* ROS packages of a number of robots, as detailed blow
+* ROS packages of a number of robots, as detailed below in Section [Installed Robots](#installed-robots)
+
 
 The Dockerfile is inspired by that of henry2423/docker-ros-vnc: [https://github.com/henry2423/docker-ros-vnc](https://github.com/henry2423/docker-ros-vnc). Most of the documentation for that repository is still valid here, except:
   * Only ROS Melodic is supported (ROS Kinetic and Lunar are not).
   * Tensorflow and Jupyter are not installed.
-  
-# Quick Startup
-## Running the Image
-Probably, the easiest way to run the docker image is to run the provided shell script file `docker-run.sh` at a command line while a docker server is running in the background. You may get the file `docker-run.sh` from the image's Github repository [https://github.com/wail-uottawa/docker-ros-elg5228](https://github.com/wail-uottawa/docker-ros-elg5228).
 
----
-<span style="color:red">**WARNING (Use of Volumes):**</span> All changes made to any file/directory within the file system of a docker container are not permanent. They are lost once the container is stopped. To avoid this problem, the `docker-run.sh` script maps a local folder `~/MyGDrive/Docker-ELG5228/course_dir` on your computer onto another folder `/home/ros/catkin_ws/src/course_dir` in the docker container. It is highly recommended that you dedicate a local folder on your computer as a ROS working folder (e.g., throughout the course). It can have any name and path (for example: `/C/Courses/Mobile-robotics/ROS-Work` for Windows hosts or `/Users/john/ELG5228/ROS-Work` for Mac hosts). To be even safer, you might want to have this folder as part of a cloud drive that is automatically synchronized on your local machine (such as Google Drive, OneDrive, etc.) Inside the file `docker-run.sh`, replace `~/MyGDrive/Docker-ELG5228/course_dir` with the path to your dedicated local folder. That way, each time you run the docker image through `docker-run.sh` your local dedicated folder is automatically mapped onto `/home/ros/catkin_ws/src/course_dir` in the docker container. As such, whenever you make changes on your local dedicated folder or/and on `/home/ros/catkin_ws/src/course_dir` from within the container, those changes remain permanent on the local drive and are automatically made visible from within the container at `/home/ros/catkin_ws/src/course_dir` every time you run the image. 
+# Running the Docker Image
 
-To allow for more customization without having to rebuild the docker image, place the file `customization.bash` in the mapped drive in your host computer. It is sourced automatically in `.bashrc` when the docker image is fired. 
+## Connecting to the Image by Running it on your Local Machine (Host)
+Probably, the easiest way to run the docker image is to run the provided shell script file `docker-run.sh`, for Linux and Mac users, or `docker-run.bat`, for Windows users (or copy and paste its content), at a command line of your personal computer, while a docker server is running in the background. You may get the files `docker-run.sh` and `docker-run.bat` from the image's Github repository [https://github.com/wail-uottawa/docker-ros-elg5228](https://github.com/wail-uottawa/docker-ros-elg5228).
 
 ---
 
+<span style="color:red">**WARNING (Use of Volumes):**</span>  
+* All changes made to any file/directory within the file system of a docker container are not permanent. They are lost once the container is stopped. 
+* To avoid this problem, the `docker-run.sh` (or `docker-run.bat`) script maps a local folder `~/OneDrive-uOttawa/Docker-ELG5228-ROS1/course_dir` (or `/C/OneDrive-uOttawa/Docker-ELG5228-ROS1/ros_work`) on your computer onto another folder `/home/ros/catkin_ws/src/course_dir` in the docker container. 
+* It is highly recommended that you dedicate a local folder on your computer as a ROS working folder (e.g., throughout the course). It can have any name and path (for example: `/C/OneDrive-uOttawa/Docker-ELG5228-ROS1` for Windows hosts or `~/OneDrive-uOttawa/Docker-ELG5228-ROS1` for Linux and Mac hosts). 
+* To be even safer, you might want to have this folder as part of a cloud drive that is automatically synchronized on your local machine (such as Google Drive, OneDrive, etc.) as in the above examples, although this is not necessary. 
+* Inside the file `docker-run.sh` (or `docker-run.bat`), replace `~/OneDrive-uOttawa/Docker-ELG5228-ROS1/course_dir` (or `/C/OneDrive-uOttawa/Docker-ELG5228-ROS1/ros_work`) with the path to your dedicated local folder. That way, each time you run the docker image through `docker-run.sh` (or `docker-run.bat`) your local dedicated folder is automatically mapped onto `/home/ros/catkin_ws/src/course_dir` in the docker container. As such, whenever you make changes on your local dedicated folder or/and on `/home/ros/catkin_ws/src/course_dir` from within the container, those changes remain permanent on the local drive and are automatically made visible from within the container at `/home/ros/catkin_ws/src/course_dir` every time you run the image. 
+
 ---
+
 <span style="color:red">**WARNING (Windows Users):**</span> If you are running the docker image from a Windows host, please take note of the following remarks:
-* You may not be able to run the file `docker-run.sh` as a shell script. To overcome this hurtle, simply run the whole command from `docker run` all the way to `bash` as a **single line** at the DOS prompt by replacing every occurrence of a backslash (\\) by a space. Do not include the first line (`#!/bin/sh`) as part of the command. A simpler way might be to simply run the file `docker-run.bat` at the DOS prompt. 
-* Note that the full path of the local folder, which you would like to map to `/home/ros/catkin_ws/src/course_dir` on the docker image, must be in the format `/C/...`; for example, `/C/Courses/Mobile-robotics/ROS-Work`. Of course, you can use other drives if your folder isn't on the C: drive. 
+* You may not be able to run the file `docker-run.sh` as a shell script. Instead, run the file `docker-run.bat` at the DOS prompt. 
+* Note that the full path of the local folder, which you would like to map to `/home/ros/catkin_ws/src/course_dir` on the docker image, must be in the format `/C/...`; for example, `/C/Courses/Mobile-robotics/ROS-Work`. Of course, you can use other drives if your folder isn't on the C drive. 
 * When you create a file in a Windows machine (e.g., `program.py`) and then you try to run a ROS command on it from inside the docker container (e.g., `rosrun`) you may get an error message of the form "`[...]\r`". This is due to the mismatch between the way Windows and Linux systems encode a carriage return (to mark the end of of a line). There are a few ways to go around this problem: 
 	* Use any of the commands described in this link [[html](https://www.cyberciti.biz/faq/howto-unix-linux-convert-dos-newlines-cr-lf-unix-text-format/)] to convert the file to a "Linux-compatible" file.
 	* Create the file inside the docker container. Then you should be able to edit it from the Windows machine without a problem. 
 
 ---
 
----
-<span style="color:red">**NOTE:**</span> The first time you run the script in `docker-run.sh`, it will take a relatively long time to pull the image from the docker hub ([https://hub.docker.com/r/realjsk/docker-ros-elg5228](https://hub.docker.com/r/realjsk/docker-ros-elg5228)), due to its large size. However, subsequent runs should be much faster since the image will be cached locally by docker.
+<span style="color:red">**NOTE:**</span> The first time you run the script in `docker-run.sh` (or `docker-run.bat`), it will take a relatively long time to pull the image from the docker hub ([https://hub.docker.com/r/realjsk/docker-ros-elg5228](https://hub.docker.com/r/realjsk/docker-ros-elg5228)), due to the image's large size. However, subsequent runs should be much faster since the image will be cached locally by docker.
 
 ---
 
-## Connecting to the Image by Running it on your Local Machine (Host)
-Successfully running `docker-run.sh` takes you to a shell command inside the image. However, this doesn't allow you to run graphical applications. To do so, while the image is running, you need to connect to it from your host machine either through a web browser or a VNC viewer, such as the free multi-platform tigerVNC Viewer ([https://tigervnc.org](https://tigervnc.org)).
+Successfully running `docker-run.sh` (or `docker-run.bat`) takes you to a shell command inside the docker container. However, this doesn't allow you to run graphical applications from within the container (yet). To do so, while the image is running, you need to connect to it from your host machine either through a web browser or a VNC viewer, such as the free multi-platform tigerVNC Viewer ([https://tigervnc.org](https://tigervnc.org)).
 
 ### Connecting Through Web Browser
 Simply point your web browser to either of the following two URLs;
@@ -99,6 +106,7 @@ Point your VNC viewer as follows:
 Once connected, it might be best to run the VNC viewer in full screen mode, for a better experience. 
 
 ---
+
 <span style="color:red">**NOTE:**</span> If you connect to the image via a vnc viewer, it is important to remember to terminate the vnc connection before stopping the docker image, otherwise you may experience some difficulty (vnc lock) next time you try to connect to the image via a vnc viewer. Sometimes, when the vnc connection is not terminated properly, it causes some vnc lock files to remain behind inside the server (the docker image in this case). These files are `/tmp/.X1.lock` and `/tmp/.X11-unix/X1`. The proper way to terminate a vnc connection is to follow *either* of the following options:
 * From the host computer, close the vnc viewer application (by closing its window for example).
 * From within the docker image, run the command `vncserver -kill :1`, which terminates the connection from the server. This example terminates Display 1 (:1). If you use Display 4, for example, replace 1 with 4.
@@ -108,14 +116,50 @@ Once connected, it might be best to run the VNC viewer in full screen mode, for 
 
 More details about connecting to the image can be found down in Section [Connect & Control](#connect--control).
 
-## Stopping the Image
+### Stopping the Image
 After finishing working with the docker image, and after properly disconnecting your vnc connection, in case you connected via a VNC viewer, you can stop the image in one of the following methods:
-* Graphically through Docker Desktop
+* Graphically through Docker Desktop (if available)
+* In the same terminal where you run `docker-run.sh` (or `docker-run.bat`), which is now showing the command line within the container, type `exit` (or Ctrl-d). This should kill the running of the container. 
 * From the command line on your host computer by running `docker stop IMAGE_ID:tag`, where `IMAGE_ID` and `tag` are the ID and tag of the image you want to stop(e.g., `docker stop docker-ros-elg5228:20210908`). Another way is to use the command `docker stop $(docker ps -a -q)`, which will stop *all* docker images running on your computer.
 
-## Connecting to the Image by Running it on Ontario Research & Education VCL Cloud
+## Connecting to the Image Through a uOttawa's Virtual Machine 
 <span style="color:red">**NOTE:**</span> This method of connecting to the image is only available to uOttawa affiliates. <br />
-Generally, it is prefered to run the image on your local computer. However, if it doesn't have enough CPU or memory power to run the image, you can run it on a virtual machine on Ontario Research & Education VCL Cloud. Access to the virtual machine is achieved in a few steps, from on-campus or off-campus devices alike. Since this is a remote connection, you may experience some delay depending on the speed of your internet connection and where you are connecting from. 
+Generally, it is prefered to run the image on your local computer. However, if it doesn't have enough processing or memory power, you can run it on a virtual machine that was specially set up by the IT team at the Faculty of Engineering. The virtual machine is running Ubuntu~20.04 and can be accessed locally or remotely, as described below. 
+
+### Local Acess
+1. Walk into a computer lab (e.g., STE-0110) or a teaching lab (e.g., STE-0130), but NOT an instrumentation lab. 
+2. Logon to any lab computer 
+
+### Remote Acess (Through Virtual Desktop Infrastructure (VDI))
+1. Launch **VMware Horizon Client** (which you can access at [`https://uovdi.uottawa.ca`](https://uovdi.uottawa.ca))
+2. Logon to the connection server **vdi-genie.uottawa.ca** <br />
+    NB: You need to connect through a VPN if you are off-campus. More about VPN can be found at [`https://www.uottawa.ca/about-us/information-technology/services/internet/vpn`](https://www.uottawa.ca/about-us/information-technology/services/internet/vpn). 
+
+### Starting the Virtual Machine
+1. If you want to be able to access files on the virtual machine from the local machine (the host), or vice versa, then do the following **before** launching the target virtual machine (**Ubuntu WG**):
+	* Right-click on the desired VM and select **Settings**, or Open **Connection -> Settings**, or Hit the **cog wheel** in the upper right corner
+	* Select **Drive Sharing** (in the left pane, often near the top) <br />
+    NB: on a Mac, **Drive Sharing** is found under **Preferences**
+	* Select the drive to be access from the virtual machine 
+		* If you you are on a personnal computer, you can
+			* enable **Share your home folder** to access your home directory from the viirtual machine 
+			* and/or select specific directories by clicking **Add** to browse to them and **Open** them
+		* In all cases, you can also enable **Allow access to removable storage** to access data from a USB key or CD
+	* Hit **Apply**
+	* Hit **OK**
+	* The local directories and/or devices will show up in the home folder of the virtual machine (after it is started) under **tsclient**
+2. Double click on the target virtual machine (**Ubuntu WG**) to start it 
+
+### Starting/Stopping the Docker Image from Within the Virtual Machine
+* Once inside the virtual machine, open a terminal and run the script in file `docker-run-vm.sh`. 
+* At this point, you are almost as if you are running the image from your local machine. Follow the rest of the instructions from Section
+[Connecting to the Image by Running it on your Local Machine (Host)](#connecting-to-the-image-by-running-it-on-your-local-machine-host)).
+* The only exception is that, in this case, drive `/home/ros/catkin_ws/src/course_dir` in the docker container is mapped to drive `course_dir` in the home directory in the virtual machine. You need to manually copy the files/folders you need to work with from your local machine (found under **tsclient** in the virtual machine as described in Section [Starting the Virtual Machine](#starting-the-virtual-machine)) to `~/course_dir` in the virtual machine. Do NOT forget to copy them back to your local machine BEFORE terminating the running of the docker container. Remember that once the container is terminated, all the files under the file system of the container are lost permanently. 
+
+## Connecting to the Image by Running it on Ontario Research & Education VCL Cloud 
+<span style="color:red">**(This method is no longer supported by uOttawa)**</span> <br />
+<span style="color:red">**NOTE:**</span> This method of connecting to the image is only available to uOttawa affiliates. <br />
+Generally, it is prefered to run the image on your local computer. However, if it doesn't have enough processing or memory power, you can run it on a virtual machine on Ontario Research & Education VCL Cloud. Access to the virtual machine is achieved in a few steps, from on-campus or off-campus devices alike. Since this is a remote connection, you may experience some delay depending on the speed of your internet connection and where you are connecting from. 
 
 1. Browse to the VCL portal: [https://orec.rdc.uottawa.ca](https://orec.rdc.uottawa.ca)
 2. Login:
@@ -155,12 +199,14 @@ Generally, it is prefered to run the image on your local computer. However, if i
 
 
 # ROS Catkin Workspace 
-The container comes with a catkin workspace already set up. By default, the path for the catkin workspace is  
+* The container comes with a catkin workspace already set up. By default, the path for the catkin workspace is  
 `/home/ros/catkin_ws`
 
-Some ROS packages are installed in the catkin workspace, including those of some of the robots listed in section [Installed Robots](#installed-robots).
+* Some ROS packages are installed in the catkin workspace, including those of some of the robots listed in section [Installed Robots](#installed-robots).
 
-In order for users to write their own ROS packages without running the risk of interfering with the pre-installed packages in this catkin workspace, it is recommended to include all user packages inside the `src` directory of the catkin workspace in a mapped directory. This is already setup in the provided `docker-run.sh` file through the `--volume` option of the `docker run` command. You just need to edit it to override the path to the local drive in there (`~/MyGDrive/Docker-ELG5228/course_dir`) to the one of your choice, as explained in section [Running the Image](#running-the-image).
+* In order for users to write their own ROS packages without running the risk of interfering with the pre-installed packages in this catkin workspace, it is recommended to include all user packages inside the `src` directory of the catkin workspace in a mapped directory. This is already setup in the provided `docker-run.sh` file (or `docker-run.bat`) through the `--volume` option of the `docker run` command. You just need to edit it to override the path to the local drive in there (`~/OneDrive-uOttawa/Docker-ELG5228-ROS1/course_dir`) to the one of your choice, as explained in section [Running the Image](#running-the-image).
+
+* To allow for more customization without having to rebuild the docker image, place the file `customization.bash` in the mapped drive in your host computer. At the end of file `.bashrc` in the home folder of the docker file system add the line `source [/path/to/customization.bash]`, where of course you need to replace `[/path/to/customization.bash]` with the path to the file. The customization inside that file will be in effect for the terminals launched from that moment on. to have them reflected in the already open terminals, run the command `source ~/.bashrc` in each of them. 
 
 # Installed Robots
 The image comes loaded with pre-installed ROS packages for a number of robots.
@@ -331,43 +377,3 @@ The main purpose of this repository and docker image is to facilitate instructor
 I am no docker expert. It is very likely that the generated docker image and the provided `Dockerfile` are by no means optimal. 
 
 
-
-
-
-
-
-<style type="text/css">
-  body { counter-reset: h1counter h2counter h3counter h4counter h5counter h6counter; }
-
-h1 { counter-reset: h2counter; }
-h2 { counter-reset: h3counter; }
-h3 { counter-reset: h4counter; }
-h4 { counter-reset: h5counter; }
-h5 { counter-reset: h6counter; }
-h6 {}
-
-h2:before {
-    counter-increment: h2counter;
-    content: counter(h2counter) ".\0000a0\0000a0";
-}
-
-h3:before {
-    counter-increment: h3counter;
-    content: counter(h2counter) "." counter(h3counter) ".\0000a0\0000a0";
-}
-
-h4:before {
-    counter-increment: h4counter;
-    content: counter(h2counter) "." counter(h3counter) "." counter(h4counter) ".\0000a0\0000a0";
-}
-
-h5:before {
-    counter-increment: h5counter;
-    content: counter(h2counter) "." counter(h3counter) "." counter(h4counter) "." counter(h5counter) ".\0000a0\0000a0";
-}
-
-h6:before {
-    counter-increment: h6counter;
-    content: counter(h2counter) "." counter(h3counter) "." counter(h4counter) "." counter(h5counter) "." counter(h6counter) ".\0000a0\0000a0";
-}
-</style>
