@@ -16,7 +16,7 @@
         - [Stopping the Image](#stopping-the-image)
     - [Connecting to the Image Through a uOttawa's Virtual Machine](#connecting-to-the-image-through-a-uottawas-virtual-machine)
         - [Local Acess](#local-acess)
-        - [Remote Acess](#remote-acess)
+        - [Remote Acess (Through Virtual Desktop Infrastructure (VDI))](#remote-acess-through-virtual-desktop-infrastructure-vdi)
         - [Starting the Virtual Machine](#starting-the-virtual-machine)
         - [Starting/Stopping the Docker Image from Within the Virtual Machine](#startingstopping-the-docker-image-from-within-the-virtual-machine)
     - [Connecting to the Image by Running it on Ontario Research & Education VCL Cloud](#connecting-to-the-image-by-running-it-on-ontario-research--education-vcl-cloud)
