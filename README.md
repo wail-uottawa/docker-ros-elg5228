@@ -1,9 +1,9 @@
-***Docker image with ROS, Gazebo, Xfce4 VNC Desktop, and several robot packages***
+***Docker image with ROS Noetic and Gazebo on Ubuntu (20.04) LXDE, HTML5 VNC interface, and several robot packages***
 
 **Maintainer:** *Wail Gueaieb*
 
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/wail-uottawa/docker-ros-elg5228/main)
-[![GitHub license](https://img.shields.io/github/license/wail-uottawa/docker-ros-elg5228)](https://github.com/wail-uottawa/docker-ros-elg5228/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/github/license/wail-uottawa/docker-ros-elg5228)](https://github.com/wail-uottawa/docker-ros-elg5228/blob/main/LICENSE)
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
@@ -54,15 +54,13 @@
 # Overview
 
 This is a docker image to support teaching ROS-based robotic courses (including "ELG 5228: Mobile Robots" at the University of Ottawa) and to help researchers and hobbyists to experiment with a number of robots. It provides enough power and flexibility to cover various robotic topics (e.g., navigation, control, path planning, manipulators, wheeled mobile robots, aerial robots, etc.) with the ease to add more as needed. It comes with the following main components:
-* ROS Melodic installed on Ubuntu 18.04
-* Gazebo 9
-* Xfce4 VNC Desktop to facilitate remote access
+* ROS Noetic installed on Ubuntu 20.04
+* Gazebo 11
+* HTML5 VNC interface to facilitate remote access
 * ROS packages of a number of robots, as detailed below in Section [Installed Robots](#installed-robots)
 
 
-The Dockerfile is inspired by that of henry2423/docker-ros-vnc: [https://github.com/henry2423/docker-ros-vnc](https://github.com/henry2423/docker-ros-vnc). Most of the documentation for that repository is still valid here, except:
-  * Only ROS Melodic is supported (ROS Kinetic and Lunar are not).
-  * Tensorflow and Jupyter are not installed.
+The Dockerfile is inspired by that of tiryoh/ros-desktop-vnc:[https://github.com/Tiryoh/docker-ros-desktop-vnc](https://github.com/Tiryoh/docker-ros-desktop-vnc). Most of the documentation for that repository is still valid here.
 
 # Running the Docker Image
 
