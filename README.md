@@ -2,8 +2,8 @@
 
 **Maintainer:** *Wail Gueaieb*
 
-![GitHub last commit (branch)](https://img.shields.io/github/last-commit/wail-uottawa/docker-ros-elg5228/main)
-[![GitHub license](https://img.shields.io/github/license/wail-uottawa/docker-ros-elg5228)](https://github.com/wail-uottawa/docker-ros-elg5228/blob/main/LICENSE)
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/wail-uottawa/docker-ros-elg5228/noetic)
+[![GitHub license](https://img.shields.io/github/license/wail-uottawa/docker-ros-elg5228)](https://github.com/wail-uottawa/docker-ros-elg5228/blob/noetic/LICENSE)
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
@@ -60,7 +60,7 @@ This is a docker image to support teaching ROS-based robotic courses (including 
 * ROS packages of a number of robots, as detailed below in Section [Installed Robots](#installed-robots)
 
 
-The Dockerfile is inspired by that of tiryoh/ros-desktop-vnc:[https://github.com/Tiryoh/docker-ros-desktop-vnc](https://github.com/Tiryoh/docker-ros-desktop-vnc). Most of the documentation for that repository is still valid here.
+The Dockerfile is inspired by that of tiryoh/ros-desktop-vnc: [https://github.com/Tiryoh/docker-ros-desktop-vnc](https://github.com/Tiryoh/docker-ros-desktop-vnc). Most of the documentation for that repository is still valid here.
 
 # Running the Docker Image
 
