@@ -2,11 +2,54 @@
 # https://hub.docker.com/r/tiryoh/ros-desktop-vnc
 # https://github.com/Tiryoh/docker-ros-desktop-vnc
 
-FROM tiryoh/ros-desktop-vnc:noetic-amd64-20240421T0248 AS stage-basis
+# FROM tiryoh/ros-desktop-vnc:noetic-amd64-20240421T0248 AS stage-basis
+FROM tiryoh/ros-desktop-vnc:noetic-amd64-20240428T0225 AS stage-basis
+# FROM osrf/ros:noetic-desktop-full AS stage-basis
 
 LABEL maintainer "Wail Gueaieb"
 MAINTAINER Wail Gueaieb "https://github.com/wail-uottawa/docker-ros-elg5228"
 ENV REFRESHED_AT 2024-04-28
+
+#######################################################
+
+RUN apt-get update && apt-get install -y \
+    cmake \
+    curl \
+    libglu1-mesa-dev \
+    nano \
+    python3-pip \
+    python3-pydantic \
+    ros-noetic-catkin \
+    ros-noetic-gazebo-ros \
+    ros-noetic-gazebo-ros-pkgs \
+    ros-noetic-joint-state-publisher \
+    ros-noetic-robot-localization \
+    ros-noetic-plotjuggler-ros \
+    ros-noetic-robot-state-publisher \
+    ros-noetic-rqt-tf-tree \
+    ros-noetic-slam-toolbox \
+    ros-noetic-turtlebot3 \
+    ros-noetic-turtlebot3-msgs \
+    ros-noetic-twist-mux \
+    ros-noetic-usb-cam \
+    ros-noetic-xacro \
+    ruby-dev \
+    rviz \
+    tmux \
+    wget \
+    xorg-dev \
+    zsh
+
+# To use catkin build instead of catkin_make
+RUN apt-get update && apt-get install -y \
+    python3-wstool \
+    python3-rosinstall-generator \
+    python3-catkin-lint \
+    python3-pip \
+    python3-catkin-tools
+RUN pip3 install osrf-pycommon
+
+#######################################################
 
 # Install ubuntu packages
 RUN apt-get update && \
@@ -71,6 +114,8 @@ RUN echo "export TURTLEBOT3_MODEL=burger" >> ~/.bashrc
 
 ### Installing Husky
 # http://wiki.ros.org/husky_gazebo/Tutorials/Simulating%20Husky
+# https://wiki.ros.org/Robots/Husky
+# https://github.com/husky
 FROM stage-turtlebot3 AS stage-husky
 
 RUN apt-get install -y ros-noetic-husky-simulator ros-noetic-husky-control ros-noetic-husky-desktop ros-noetic-husky-msgs ros-noetic-husky-navigation ros-noetic-husky-viz     
@@ -80,7 +125,7 @@ RUN echo "export HUSKY_GAZEBO_DESCRIPTION=\$(rospack find husky_gazebo)/urdf/des
 # Enabling the SICK LMS1XX LIDAR
 # More customization environment variables are found at
 # http://wiki.ros.org/husky_bringup/Tutorials/Customize%20Husky%20Configuration
-# RUN echo "export HUSKY_LMS1XX_ENABLED=true" >> ~/.bashrc
+RUN echo "export HUSKY_LMS1XX_ENABLED=true" >> ~/.bashrc
 
 
 
