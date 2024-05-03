@@ -2,6 +2,8 @@
 
 **Maintainer:** *Wail Gueaieb*
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/realjsk/docker-ros-elg5228)](https://hub.docker.com/r/realjsk/docker-ros-elg5228)
+[![Docker Automated build](https://img.shields.io/docker/automated/wail-uottawa/docker-ros-elg5228)](https://hub.docker.com/r/realjsk/docker-ros-elg5228)
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/wail-uottawa/docker-ros-elg5228/noetic)
 [![GitHub license](https://img.shields.io/github/license/wail-uottawa/docker-ros-elg5228)](https://github.com/wail-uottawa/docker-ros-elg5228/blob/noetic/LICENSE)
 
