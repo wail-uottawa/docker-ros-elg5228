@@ -11,6 +11,7 @@
 **Table of Contents**
 
 - [Overview](#overview)
+- [Looking Ahead](#looking-ahead)
 - [Running the Docker Image](#running-the-docker-image)
     - [Connecting to the Image by Running it on your Local Machine (Host)](#connecting-to-the-image-by-running-it-on-your-local-machine-host)
         - [Connecting Through Web Browser](#connecting-through-web-browser)
@@ -65,7 +66,7 @@ Keep in mind the information in the following tables when reading the rest of th
 |:------------------------------|:-----------|
 | realjsk/docker-ros-noetic-vnc | 20240504   |
 
-| Local drive  | Mapped in container  | Notes  |
+| Local drive  | Mapped drive in container  | Notes  |
 |:--|:--|:--|
 | ~/OneDrive-uOttawa/Docker-ELG5228-ROS1/course_dir  | /home/ros/catkin_ws/src/course_dir  | Replace the "~/OneDrive-uOttawa/Docker-ELG5228-ROS1" part with the path to your dedicated local folder  |
 
@@ -104,7 +105,7 @@ Successfully running `docker-run.sh` (or `docker-run.bat`) takes you to a shell 
 After finishing working with the docker container, you can stop it in one of the following methods:
 * Graphically through Docker Dashboard (if available)
 * In the same terminal where you run `docker-run.sh` (or `docker-run.bat`), which is now showing the command line within the container, type Ctrl-c. This should kill the running of the container. 
-* From the command line on your host computer by running `docker stop IMAGE_ID:tag`, where `IMAGE_ID` and `tag` are the ID and tag of the image you want to stop(e.g., `docker stop realjsk/docker-ros-noetic-vnc:20240428`). Another way is to use the command `docker stop $(docker ps -a -q)`, which will stop *all* docker images running on your computer.
+* From the command line on your host computer by running `docker stop IMAGE_ID:tag`, where `IMAGE_ID` and `tag` are the ID and tag of the image you want to stop (e.g., `docker stop realjsk/docker-ros-noetic-vnc:20240428`). Refer to Section [Looking Ahead](#looking-ahead "Looking Ahead")  <#looking-ahead> for the latest image tag. Another way is to use the command `docker stop $(docker ps -a -q)`, which will stop *all* docker images running on your computer.
 
 ## Connecting to the Image Through a uOttawa's Virtual Machine 
 <span style="color:red">**NOTE:**</span> This method of connecting to the image is only available to uOttawa affiliates. <br />
