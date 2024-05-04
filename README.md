@@ -1,8 +1,8 @@
-***Docker image with ROS Noetic and Gazebo on Ubuntu (20.04) LXDE, HTML5 VNC interface, and several robot packages***
+***Docker image with ROS Noetic on Ubuntu (20.04) LXDE + Gazebo + HTML5 VNC interface + several robot packages***
 
 **Maintainer:** *Wail Gueaieb*
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/realjsk/docker-ros-noetic-vnc)](https://hub.docker.com/r/realjsk/docker-ros-elg5228)
+[![Docker Pulls](https://img.shields.io/docker/pulls/realjsk/docker-ros-noetic-vnc)](https://hub.docker.com/r/realjsk/docker-ros-noetic-vnc)
 [![Docker Automated build](https://img.shields.io/docker/automated/realjsk/docker-ros-noetic-vnc)](https://hub.docker.com/r/realjsk/docker-ros-noetic-vnc)
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/wail-uottawa/docker-ros-elg5228/noetic)
 [![GitHub license](https://img.shields.io/github/license/wail-uottawa/docker-ros-elg5228)](https://github.com/wail-uottawa/docker-ros-elg5228/blob/noetic/LICENSE)
@@ -83,7 +83,7 @@ Probably, the easiest way to run the docker image is to run the provided shell s
 
 ---
 
-<span style="color:red">**NOTE:**</span> The first time you run the script in `docker-run.sh` (or `docker-run.bat`), it will take a relatively long time to pull the image from the docker hub ([https://hub.docker.com/r/realjsk/docker-ros-elg5228](https://hub.docker.com/r/realjsk/docker-ros-elg5228)), due to the image's large size. However, subsequent runs should be much faster since the image will be cached locally by docker.
+<span style="color:red">**NOTE:**</span> The first time you run the script in `docker-run.sh` (or `docker-run.bat`), it will take a relatively long time to pull the image from the docker hub ([https://hub.docker.com/r/realjsk/docker-ros-noetic-vnc](https://hub.docker.com/r/realjsk/docker-ros-noetic-vnc)), due to the image's large size. However, subsequent runs should be much faster since the image will be cached locally by docker.
 
 ### Connecting Through Web Browser
 Successfully running `docker-run.sh` (or `docker-run.bat`) takes you to a shell command inside the docker container. However, this doesn't allow you to run graphical applications from within the container (yet). To do so, while the image is running, simply point your web browser to: [http://127.0.0.1:6080](http://127.0.0.1:6080) 
@@ -178,7 +178,7 @@ Generally, it is prefered to run the image on your local computer. However, if i
 
 * In order for users to write their own ROS packages without running the risk of interfering with the pre-installed packages in this catkin workspace, it is recommended to include all user packages inside the `src` directory of the catkin workspace in a mapped directory. This is already setup in the provided `docker-run.sh` file (or `docker-run.bat`) through the `--volume` option of the `docker run` command. You just need to edit it to override the path to the local drive in there (`~/OneDrive-uOttawa/Docker-ELG5228-ROS1/course_dir`) to the one of your choice, as explained in section [Running the Image](#running-the-image).
 
-* To allow for more customization without having to rebuild the docker image, place the file `customization.bash` in the mapped drive in your host computer. At the end of file `.bashrc` in the home folder of the docker file system add the line `source [/path/to/customization.bash]`, where of course you need to replace `[/path/to/customization.bash]` with the path to the file. The customization inside that file will be in effect for the terminals launched from that moment on. to have them reflected in the already open terminals, run the command `source ~/.bashrc` in each of them. 
+* To allow for more customization without having to rebuild the docker image, place the file `configurations.bash` in the root of the mapped drive on your host computer. Include any customizations needed in this file. The file is automatically sourced in `~/.bashrc`. The customization inside `configurations.bash` will be in effect for the terminals launched from that moment on. To have them reflected in the already open terminals, run the command `source ~/.bashrc` in each of them. 
 
 # Installed Robots
 The image comes loaded with pre-installed ROS packages for a number of robots.
@@ -241,33 +241,29 @@ The image comes with a few standard Linux terminals, such as `XTerm`, `UXTerm`, 
 The docker image can be either pulled directly from Docker Hub, or built locally on your personal computer. The former method may be much more convenient. 
 
 ## Pulling the Docker Image from Docker Hub
-Currently, the docker image lives in a Docker Hub repository [realjsk/docker-ros-elg5228](https://hub.docker.com/r/realjsk/docker-ros-elg5228). It can be pulled using the docker command:
+Currently, the docker image lives in a Docker Hub repository [realjsk/docker-ros-noetic-vnc](https://hub.docker.com/r/realjsk/docker-ros-noetic-vnc). It can be pulled using the docker command:
 
-	docker pull realjsk/docker-ros-elg5228:<tag>
+	docker pull realjsk/docker-ros-noetic-vnc:<tag>
 	
-where `<tag>` is the tag you prefer to pull. A list of available tags is found at [https://hub.docker.com/r/realjsk/docker-ros-elg5228/tags](https://hub.docker.com/r/realjsk/docker-ros-elg5228/tags). For instance, you can replace `<tag>` in the above command by `20210908`.
+where `<tag>` is the tag you prefer to pull. A list of available tags is found at [https://hub.docker.com/r/realjsk/docker-ros-noetic-vnc/tags](https://hub.docker.com/r/realjsk/docker-ros-noetic-vnc/tags). For instance, you can replace `<tag>` in the above command by `20240502`.
 
 ## Building the Docker Image Locally
 The source files to build the docker image on a local computer are stored at the Github repository [https://github.com/wail-uottawa/docker-ros-elg5228](https://github.com/wail-uottawa/docker-ros-elg5228).
 
 1. Start by cloning the repository:  
    `git clone https://github.com/wail-uottawa/docker-ros-elg5228.git`
-2. Then, cd to the directory including the file `Dockerfile` and (with the docker server running) build the image:  
-   `docker build --squash -t name:<tag>  .` (note the dot at the end)  
-   where `name` and `<tag>` are the name and tag you want to give to the built image.  
-   This can also be done by editing and running the provided shell script `docker-build.sh` using the command:  
-   `sh docker-build.sh`
+2. Then, (edit and) run the provided shell script `docker-build.sh`. You may need to change the image tag in that file.
 
 # Running the Container
-The container is developed under xfce-docker-container source, which makes it accessible through xfce-vnc or no-vnc (via http vnc service). In the following, it is assumed that the `name:<tag>` of the docker image is `realjsk/docker-ros-elg5228:20210908`. If you used a different one, please make the necessary adjustments to the proceeding commands.
+The container is developed under xfce-docker-container source, which makes it accessible through xfce-vnc or no-vnc (via http vnc service). In the following, it is assumed that the `name:<tag>` of the docker image is `realjsk/docker-ros-noetic-vnc:20240502`. If you used a different one, please make the necessary adjustments to the proceeding commands.
 
 - Run command with a mapping to local port `5901` (vnc protocol) and `6901` (vnc web access):
 
-      `docker run -d -p 5901:5901 -p 6901:6901 realjsk/docker-ros-elg5228:20210908`
+      `docker run -d -p 5901:5901 -p 6901:6901 realjsk/docker-ros-noetic-vnc:20240502`
 
 - Another alternative to connect to the container is to use the interactive mode `-it` and `bash`
       
-      `docker run -it -p 5901:5901 -p 6901:6901 realjsk/docker-ros-elg5228:20210908 bash`
+      `docker run -it -p 5901:5901 -p 6901:6901 realjsk/docker-ros-noetic-vnc:20240502 bash`
 
 ## Connect & Control
 The default username and password in the container are `ubuntu` and `ubuntu`.
@@ -282,7 +278,7 @@ The following VNC environment variables can be overwritten within the docker run
 #### Example: Overriding the VNC resolution
 Simply overwrite the value of the environment variable `VNC_RESOLUTION`. For example, in the docker run command:
 
-    docker run -it -p 5901:5901 -p 6901:6901 -e VNC_RESOLUTION=800x600 docker-ros-elg5228:20210908
+    docker run -it -p 5901:5901 -p 6901:6901 -e VNC_RESOLUTION=800x600 docker-ros-elg5228:20240502
 
 # Acknowledgment
 Credit goes primarily to the maintainers of the following projects:
