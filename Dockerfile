@@ -61,8 +61,12 @@ RUN apt-get update && \
     dos2unix \
     evince \
     viewnior \
-    vim tmux git \
-    emacs filezilla terminator 
+    vim \
+    tmux \
+    git \
+    emacs \
+    filezilla \
+    terminator
 
 
 
@@ -244,3 +248,11 @@ USER root
 
 RUN sudo apt-get install -y ros-noetic-libfranka ros-noetic-franka-ros
 RUN /bin/bash -c 'source $CATKIN_WS/devel/setup.bash'
+
+
+
+### Finalization
+FROM stage-panda AS stage-finalization
+
+# Source configurations.bash in ~/.bashrc
+RUN echo "source $CATKIN_WS/src/course_dir/configurations.bash" >> ~/.bashrc
