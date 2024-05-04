@@ -1,4 +1,4 @@
-***Docker image with ROS Noetic on Ubuntu (20.04) LXDE + Gazebo + HTML5 VNC interface + several robot packages***
+***Docker image with ROS Noetic on Ubuntu (20.04) + Gazebo + HTML5 VNC interface + several robot packages***
 
 **Maintainer:** *Wail Gueaieb*
 
@@ -56,6 +56,18 @@ This is a docker image to support teaching ROS-based robotic courses (including 
 
 
 The Dockerfile is inspired by that of tiryoh/ros-desktop-vnc: [https://github.com/Tiryoh/docker-ros-desktop-vnc](https://github.com/Tiryoh/docker-ros-desktop-vnc). Most of the documentation for that repository is still valid here.
+
+# Looking Ahead
+
+Keep in mind the information in the following tables when reading the rest of the documentation on this page. 
+
+| Image name                    | Latest tag |
+|:------------------------------|:-----------|
+| realjsk/docker-ros-noetic-vnc | 20240504   |
+
+| Local drive  | Mapped in container  | Notes  |
+|:--|:--|:--|
+| ~/OneDrive-uOttawa/Docker-ELG5228-ROS1/course_dir  | /home/ros/catkin_ws/src/course_dir  | Replace the "~/OneDrive-uOttawa/Docker-ELG5228-ROS1" part with the path to your dedicated local folder  |
 
 # Running the Docker Image
 

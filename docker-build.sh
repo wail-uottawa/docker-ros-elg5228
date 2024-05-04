@@ -3,7 +3,7 @@
 # Independent squashing tool
 # https://github.com/goldmann/docker-squash
 
-docker build -t realjsk/docker-ros-noetic-vnc:20240502 --no-cache   .
+docker build -t realjsk/docker-ros-noetic-vnc:20240504 --no-cache   .
 
 # docker build --squash -t realjsk/docker-ros-noetic-vnc:20240428 --no-cache   .
 
