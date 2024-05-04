@@ -105,7 +105,7 @@ Successfully running `docker-run.sh` (or `docker-run.bat`) takes you to a shell 
 After finishing working with the docker container, you can stop it in one of the following methods:
 * Graphically through Docker Dashboard (if available)
 * In the same terminal where you run `docker-run.sh` (or `docker-run.bat`), which is now showing the command line within the container, type Ctrl-c. This should kill the running of the container. 
-* From the command line on your host computer by running `docker stop IMAGE_ID:tag`, where `IMAGE_ID` and `tag` are the ID and tag of the image you want to stop (e.g., `docker stop realjsk/docker-ros-noetic-vnc:20240428`). Refer to Section [Looking Ahead](#looking-ahead "Looking Ahead")  <#looking-ahead> for the latest image tag. Another way is to use the command `docker stop $(docker ps -a -q)`, which will stop *all* docker images running on your computer.
+* From the command line on your host computer by running `docker stop IMAGE_ID:tag`, where `IMAGE_ID` and `tag` are the ID and tag of the image you want to stop (e.g., `docker stop realjsk/docker-ros-noetic-vnc:20240428`). Refer to Section [Looking Ahead](#looking-ahead "Looking Ahead") for the latest image tag. Another way is to use the command `docker stop $(docker ps -a -q)`, which will stop *all* docker images running on your computer.
 
 ## Connecting to the Image Through a uOttawa's Virtual Machine 
 <span style="color:red">**NOTE:**</span> This method of connecting to the image is only available to uOttawa affiliates. <br />
@@ -258,7 +258,7 @@ Currently, the docker image lives in a Docker Hub repository [realjsk/docker-ros
 
 	docker pull realjsk/docker-ros-noetic-vnc:<tag>
 	
-where `<tag>` is the tag you prefer to pull. A list of available tags is found at [https://hub.docker.com/r/realjsk/docker-ros-noetic-vnc/tags](https://hub.docker.com/r/realjsk/docker-ros-noetic-vnc/tags). For instance, you can replace `<tag>` in the above command by `20240502`.
+where `<tag>` is the tag you prefer to pull. A list of available tags is found at [https://hub.docker.com/r/realjsk/docker-ros-noetic-vnc/tags](https://hub.docker.com/r/realjsk/docker-ros-noetic-vnc/tags). For instance, you can replace `<tag>` in the above command by `20240504`. Refer to Section [Looking Ahead](#looking-ahead "Looking Ahead") for the latest image tag.
 
 ## Building the Docker Image Locally
 The source files to build the docker image on a local computer are stored at the Github repository [https://github.com/wail-uottawa/docker-ros-elg5228](https://github.com/wail-uottawa/docker-ros-elg5228).
